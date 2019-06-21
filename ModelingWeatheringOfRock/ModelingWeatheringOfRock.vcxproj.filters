@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="CUDA">
+      <UniqueIdentifier>{30350296-0b03-4587-bbf6-8d61aa28a79a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PieChart">
+      <UniqueIdentifier>{3734f3b7-eb6f-4d5f-bc0e-00811f03e7b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\리소스 파일\NewFilter1">
+      <UniqueIdentifier>{20002816-cc21-4910-91c1-41c89fcd8835}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ModelingWeatheringOfRock.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelingWeatheringOfRockDlg.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxinsetersectTriangle.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Define.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgColorChart.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgOpenglView.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Macro.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjLoader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ProbDistribution.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CGLImage.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CGLTexture.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CRGBSurface.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CWGL.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Jconfig.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="include\jmorecfg.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Jpeglib.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OGLT.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="include\StdAfx.h">
+      <Filter>소스 파일\리소스 파일\NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="CUDA\GPUSolid.cuh">
+      <Filter>CUDA</Filter>
+    </ClInclude>
+    <ClInclude Include="CUDA\GPUSurface.cuh">
+      <Filter>CUDA</Filter>
+    </ClInclude>
+    <ClInclude Include="PieChart\ColourPicker.h">
+      <Filter>PieChart</Filter>
+    </ClInclude>
+    <ClInclude Include="PieChart\ColourPopup.h">
+      <Filter>PieChart</Filter>
+    </ClInclude>
+    <ClInclude Include="PieChart\PieChartCtrl.h">
+      <Filter>PieChart</Filter>
+    </ClInclude>
+    <ClInclude Include="PieChart\DlgPieDemoDlg.h">
+      <Filter>PieChart</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgOpenglViewer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgOpenglViewerDialog.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ModelingWeatheringOfRock.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelingWeatheringOfRockDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxinsetersectTriangle.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgColorChart.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgOpenglView.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Global.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjLoader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ProbDistribution.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="PieChart\ColourPicker.cpp">
+      <Filter>PieChart</Filter>
+    </ClCompile>
+    <ClCompile Include="PieChart\ColourPopup.cpp">
+      <Filter>PieChart</Filter>
+    </ClCompile>
+    <ClCompile Include="PieChart\PieChartCtrl.cpp">
+      <Filter>PieChart</Filter>
+    </ClCompile>
+    <ClCompile Include="PieChart\DlgPieDemoDlg.cpp">
+      <Filter>PieChart</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgOpenglViewer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgOpenglViewerDialog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ModelingWeatheringOfRock.rc">
+      <Filter>소스 파일\리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ModelingWeatheringOfRock.rc2">
+      <Filter>소스 파일\리소스 파일</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\ModelingWeatheringOfRock.ico">
+      <Filter>소스 파일\리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="CUDA\GPUSolid.cu">
+      <Filter>CUDA</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CUDA\GPUSurface.cu">
+      <Filter>CUDA</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>
