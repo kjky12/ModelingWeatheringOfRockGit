@@ -120,6 +120,9 @@
     <ClInclude Include="DlgOpenglViewerDialog.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="CUDA\GPUCalcRockAgingInner.cuh">
+      <Filter>CUDA</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ModelingWeatheringOfRock.cpp">
@@ -188,6 +191,9 @@
       <Filter>CUDA</Filter>
     </CudaCompile>
     <CudaCompile Include="CUDA\GPUSurface.cu">
+      <Filter>CUDA</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CUDA\GPUCalcRockAgingInner.cu">
       <Filter>CUDA</Filter>
     </CudaCompile>
   </ItemGroup>

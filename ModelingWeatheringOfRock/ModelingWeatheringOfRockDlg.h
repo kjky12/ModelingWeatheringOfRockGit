@@ -17,6 +17,7 @@
 
 #include "GPUSolid.cuh"
 #include "GPUSurface.cuh"
+#include "GPUCalcRockAgingInner.cuh"
 
 
 #include "ColourPicker.h"
@@ -287,6 +288,7 @@ public:
 
 	CGPUSolid		m_GPUSolid;
 	CGPUSurface		m_GPUSurface;
+	CGPUCalcRockAgingInner		m_GPUCalcRockAgingInner;
 
 	//! 肺流 贸府 包访 //////////////////////////////////////////////////////////////////////////
 	CComboBox	m_comboUseCuda;
