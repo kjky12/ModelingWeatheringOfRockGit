@@ -262,6 +262,7 @@ void CModelingWeatheringOfRockDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_CALC_LAYER_WATER_INNER_ABSORPTION, m_editCalcLayerWaterAborption);
 	DDX_Control(pDX, IDC_EDIT_CALC_WATER_CHANGE, m_editCalcWaterChange);
 	DDX_Control(pDX, IDC_COMBO_USE_BLOCK_THREAD, m_comboBlockThreadSel);
+	DDX_Control(pDX, IDC_COMBO_PROCESS_CALC_ROCKING, m_comboProcessCalcRocking);
 }
 
 
@@ -341,6 +342,8 @@ BEGIN_MESSAGE_MAP(CModelingWeatheringOfRockDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_VIEW_RATE_STONE, &CModelingWeatheringOfRockDlg::OnBnClickedButtonViewRateStone)
 	ON_BN_CLICKED(IDC_BUTTON_SEE, &CModelingWeatheringOfRockDlg::OnBnClickedButtonSee)
 	ON_CBN_SELCHANGE(IDC_COMBO_USE_BLOCK_THREAD, &CModelingWeatheringOfRockDlg::OnCbnSelchangeComboUseBlockThread)
+	ON_CBN_SELCHANGE(IDC_COMBO_PROCESS_CALC_ROCKING, &CModelingWeatheringOfRockDlg::OnCbnSelchangeComboProcessCalcRocking)
+	ON_BN_CLICKED(IDC_BUTTON_SOLID_DATA3, &CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3)
 END_MESSAGE_MAP()
 
 
@@ -398,6 +401,9 @@ BOOL CModelingWeatheringOfRockDlg::OnInitDialog()
 	m_editGranularDisintegration.SetWindowTextW(L"7");
 	m_editCalcPorosity.SetWindowTextW(L"0.5");
 
+	m_comboProcessCalcRocking.AddString(L"GPU");
+	m_comboProcessCalcRocking.AddString(L"CPU");
+	m_comboProcessCalcRocking.SetCurSel(0);
 
 	gf_Init();
 
@@ -1987,8 +1993,17 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging()
 {
 	m_bStopCalc = FALSE;
 
-	if(CalcRockAgingSetData())
-		_beginthread( ThreadCalcRockAging, 0, this);
+	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
+	{
+
+	}
+	else//CPU
+	{
+		if(CalcRockAgingSetData())
+			_beginthread( ThreadCalcRockAging, 0, this);
+
+	}
+
 
 
 }
@@ -1999,8 +2014,17 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging2()
 {
 	m_bStopCalc = FALSE;
 
-	if(CalcRockAgingSetData())
-		_beginthread( ThreadCalcRockAging, 0, this);
+	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
+	{
+
+	}
+	else//CPU
+	{
+		if(CalcRockAgingSetData())
+			_beginthread( ThreadCalcRockAging, 0, this);
+
+	}
+
 	//OnBnClickedButtonCalcRockAging();
 	//_beginthread( ThreadCalcRockAging, 0, this);
 }
@@ -2013,9 +2037,27 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging3()
 
 	//OnBnClickedButtonCalcRockAging();
 	//_beginthread( ThreadCalcRockAging, 0, this);
+	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
+	{
+		ST_PARTICLE_POS	*pstPrarticlePos = NULL;
+		pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
+		std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
 
-	CalcRockAgingSetData();
-	_beginthread( ThreadCalcRockAging, 0, this);
+		m_GPUCalcRockAgingInner;
+
+
+		M_A_DELETE(pstPrarticlePos);
+
+
+
+	}
+	else//CPU
+	{
+		CalcRockAgingSetData();
+		_beginthread( ThreadCalcRockAging, 0, this);
+
+	}
+
 }
 
 //! ÀÔ»óºØ±« ½Ã¹Ä·¹ÀÌ¼Ç ¼öÇà
@@ -5577,4 +5619,51 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSee()
 void CModelingWeatheringOfRockDlg::OnCbnSelchangeComboUseBlockThread()
 {
 	m_nComboBlockThreadSel = m_comboBlockThreadSel.GetCurSel();
+}
+
+
+void CModelingWeatheringOfRockDlg::OnCbnSelchangeComboProcessCalcRocking()
+{
+
+}
+
+
+struct extract_second
+{
+	template <typename T, typename U>
+	const U operator() (const std::pair<T,U> &p) const
+	{
+		return p.second;
+	}
+};
+
+
+void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
+{
+	ST_PARTICLE_POS	*pstPrarticlePos = NULL;
+	pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
+	std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
+
+	M_A_DELETE(pstPrarticlePos);
+
+	int a = 0;
+
+	//std::transform(test.begin(), test.end(), test_arr, extract_second());
+
+
+
+// 	std::map <int, double> test(4);
+// 	test[0] = 11;
+// 	test[2] = 1.23;
+// 	test[3] = 23.29;
+// 	test[1] = 12.12;
+// 	std::vector<std::pair<int, double>> test_arr(test.size());
+// 	std::copy(test.begin(), test.end(), test_arr.begin());
+	//std::cout << test_arr[3] << std::endl;
+
+
+
+	g_MapOutsideData;
+
+	m_GPUCalcRockAgingInner;
 }

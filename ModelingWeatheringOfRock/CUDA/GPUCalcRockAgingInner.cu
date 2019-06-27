@@ -16,3 +16,11 @@ CGPUCalcRockAgingInner::~CGPUCalcRockAgingInner(void)
 }
 
 
+void CGPUCalcRockAgingInner::SetInnderVoxelData(ST_PARTICLE_POS	*pstPrarticlePos)
+{
+
+
+
+
+}
+

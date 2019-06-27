@@ -381,6 +381,9 @@ public:
 
 	int SameStartIdxFind(int nStartIdx, ST_VOXEL_3D_POS_VIEWER	&stVoxel3dPosViewer, map<ST_VOXEL_3D_POS_VIEWER, ST_SHOW_DATA> &mapShowData, vector<ST_VOXEL_3D_POS_VIEWER>&	vecVoxel3DPosViewer, set<ST_VOXEL_3D_POS_VIEWER>		&setVoxel3dPosViewer);
 	afx_msg void OnCbnSelchangeComboUseBlockThread();
+	CComboBox m_comboProcessCalcRocking;
+	afx_msg void OnCbnSelchangeComboProcessCalcRocking();
+	afx_msg void OnBnClickedButtonSolidData3();
 };
 
 

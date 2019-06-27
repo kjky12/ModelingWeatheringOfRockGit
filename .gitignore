@@ -33,6 +33,9 @@
 *.opensdf
 *.sdf
 *.ipch
+*.csv
+*.pdb
+*.ilk
 
 # Compile Folder
 /ModelingWeatheringOfRock/Debug/
