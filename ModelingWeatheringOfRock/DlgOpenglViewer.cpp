@@ -757,8 +757,9 @@ int CDlgOpenglViewer::DrawFileExternScene()
 				glTranslatef((stParticlePos.x - g_nXVoxCnt)/10.0f,(stParticlePos.y- g_nYVoxCnt)/10.0f,(stParticlePos.z- g_nZVoxCnt)/10.0f);			// Move Left And Into The Screen
 
 				//gf_GetEfieldColor(stParticlePos.fPorosity,nRed,nGreen,nBlue);
-
-				switch ((int)stParticlePos.vecExternalSide.size())
+				
+				//switch ((int)stParticlePos.vecExternalSide.size())
+				switch ((int)stParticlePos.iExternalSideCnt)
 				{
 				case 1: 
 					nRed = 63;

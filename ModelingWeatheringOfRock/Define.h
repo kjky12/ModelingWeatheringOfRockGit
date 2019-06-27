@@ -58,7 +58,7 @@ typedef	struct	 ST_BASE_ROCK_PARTICLE	//	기본 암석 입자 구조체
 	float			fPorosity;					// 공극률
 //	float			fWaterAbsorptionRatio;		// 흡수율
 	short			iExternalSideCnt;			// 외부 노출 단면 개수
-	vector<short>	vecExternalSide;			// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤]
+	vector<short>	vecExternalSide;			// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤] -> 0:내부, 1:외부
 
 	short			sStoneType;					//StoneType[ 0:공극, 1:장석, 2:석영, 3:사장석, 4:흑운모, 5:티타나이트, 6:각섬석, 7:녹렴석, 8:녹니석]
 
@@ -81,7 +81,10 @@ typedef	struct	 ST_PARTICLE_POS		//	입자 위치 구조체
 	bool			bUse;						// 사용여부 -> [1/23/2019 kjky12] 미사용이라고 보면됨
 	float			fPorosity;					// 공극률(랜덤 분포도 - 라일리) -> 입은 데미지(외부와 내부 둘다 같이 사용해되 될듯하다)
 	short			iExternalSideCnt;			// 외부 노출 단면 개수
-	vector<short>	vecExternalSide;			// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤]
+	//vector<short>	vecExternalSide;			// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤]
+	//  [6/27/2019 kjky12] 배열로 변환
+	//vector<short>	vecExternalSide;			// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤]
+	bool			abExternalSide[6];				// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤] -> 사용 유무
 	float			fGranularDisintegration;	// 입상붕괴 도달값 (랜덤 분포도 - 가우시안) -> 외부 입상붕괴(체력)
 	
 	/*

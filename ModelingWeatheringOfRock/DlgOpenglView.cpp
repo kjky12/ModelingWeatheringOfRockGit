@@ -610,7 +610,9 @@ int CDlgOpenglView::DrawFileExternScene()
 
 				//gf_GetEfieldColor(stParticlePos.fPorosity,nRed,nGreen,nBlue);
 
-				switch ((int)stParticlePos.vecExternalSide.size())
+				
+				//switch ((int)stParticlePos.vecExternalSide.size())
+				switch ((int)stParticlePos.iExternalSideCnt)
 				{
 				case 1: 
 					nRed = 63;

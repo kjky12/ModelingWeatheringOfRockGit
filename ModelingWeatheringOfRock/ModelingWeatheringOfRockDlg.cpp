@@ -970,14 +970,18 @@ void CModelingWeatheringOfRockDlg::CalcExternalSide(int x,int y,int z,int nXVoxC
 	CString strTmp = L"";
 
 	stParticlePos.iExternalSideCnt = 0;
-	stParticlePos.vecExternalSide.clear();
+	//stParticlePos.vecExternalSide.clear();
+	memset(stParticlePos.abExternalSide, 0, 6);
+	stParticlePos.iExternalSideCnt = 6;
+	
 
 	//if(z-1 >= 0 && z-1 < nZVoxCnt)
 	{
 		if(!GetUsedCellFromSolidFile(x,y,z-1))
 		{
 			stParticlePos.iExternalSideCnt++;
-			stParticlePos.vecExternalSide.push_back(1);
+			//stParticlePos.vecExternalSide.push_back(1);
+			stParticlePos.abExternalSide[1] = TRUE;
 		}
 	}
 
@@ -986,7 +990,8 @@ void CModelingWeatheringOfRockDlg::CalcExternalSide(int x,int y,int z,int nXVoxC
 		if(!GetUsedCellFromSolidFile(x,y,z+1))
 		{
 			stParticlePos.iExternalSideCnt++;
-			stParticlePos.vecExternalSide.push_back(0);
+			//stParticlePos.vecExternalSide.push_back(0);
+			stParticlePos.abExternalSide[0] = TRUE;
 		}
 	}
 
@@ -995,7 +1000,8 @@ void CModelingWeatheringOfRockDlg::CalcExternalSide(int x,int y,int z,int nXVoxC
 		if(!GetUsedCellFromSolidFile(x,y-1,z))
 		{
 			stParticlePos.iExternalSideCnt++;
-			stParticlePos.vecExternalSide.push_back(2);
+			//stParticlePos.vecExternalSide.push_back(2);
+			stParticlePos.abExternalSide[2] = TRUE;
 		}
 	}
 
@@ -1004,7 +1010,8 @@ void CModelingWeatheringOfRockDlg::CalcExternalSide(int x,int y,int z,int nXVoxC
 		if(!GetUsedCellFromSolidFile(x,y+1,z))
 		{
 			stParticlePos.iExternalSideCnt++;
-			stParticlePos.vecExternalSide.push_back(3);
+			//stParticlePos.vecExternalSide.push_back(3);
+			stParticlePos.abExternalSide[3] = TRUE;
 		}
 	}
 
@@ -1013,7 +1020,8 @@ void CModelingWeatheringOfRockDlg::CalcExternalSide(int x,int y,int z,int nXVoxC
 		if(!GetUsedCellFromSolidFile(x-1,y,z))
 		{
 			stParticlePos.iExternalSideCnt++;
-			stParticlePos.vecExternalSide.push_back(4);
+			//stParticlePos.vecExternalSide.push_back(4);
+			stParticlePos.abExternalSide[4] = TRUE;
 		}
 	}
 
@@ -1022,7 +1030,8 @@ void CModelingWeatheringOfRockDlg::CalcExternalSide(int x,int y,int z,int nXVoxC
 		if(!GetUsedCellFromSolidFile(x+1,y,z))
 		{
 			stParticlePos.iExternalSideCnt++;
-			stParticlePos.vecExternalSide.push_back(5);
+			//stParticlePos.vecExternalSide.push_back(5);
+			stParticlePos.abExternalSide[5] = TRUE;
 		}
 	}
 }
@@ -2139,11 +2148,15 @@ void ThreadCalcRockAging( void* pArguments )
 					//! 임시로
 					//continue;
 
-					for(int nEx = 0 ; nEx < stParticlePos.vecExternalSide.size() ; nEx++)	// 외부 노출 단면 개수만큼 계산
+					//for(int nEx = 0 ; nEx < stParticlePos.vecExternalSide.size() ; nEx++)	// 외부 노출 단면 개수만큼 계산
+					for(int nEx = 0 ; nEx < 6 ; nEx++)	// 외부 노출 단면 개수만큼 계산
 					{
 
+						if(stParticlePos.abExternalSide[nEx] == FALSE)
+							continue;
 
-						switch(stParticlePos.vecExternalSide[nEx])	//[0:상,1:하,2:좌,3:우,4:앞,5:뒤]
+						//switch(stParticlePos.vecExternalSide[nEx])	//[0:상,1:하,2:좌,3:우,4:앞,5:뒤]
+						switch(nEx)	//[0:상,1:하,2:좌,3:우,4:앞,5:뒤]
 						{
 						case 0:
 							{
@@ -4727,10 +4740,13 @@ void CModelingWeatheringOfRockDlg::SaveStepOutsideData(int nStep)
 			fwrite(&stParticlePos.iExternalSideCnt, sizeof(short), 1, p_Numfile); 
 			fwrite(&stParticlePos.fGranularDisintegration, sizeof(float), 1, p_Numfile); 
 
-			int nSize = stParticlePos.vecExternalSide.size();
-			fwrite(&nSize, sizeof(int), 1, p_Numfile); 
-			for(int v = 0 ; v < stParticlePos.vecExternalSide.size() ; v++)
-				fwrite(&stParticlePos.vecExternalSide[v], sizeof(short), 1, p_Numfile); 
+			fwrite(stParticlePos.abExternalSide, sizeof(bool) * 6, 1, p_Numfile); 
+
+
+// 			int nSize = stParticlePos.vecExternalSide.size();
+// 			fwrite(&nSize, sizeof(int), 1, p_Numfile); 
+// 			for(int v = 0 ; v < stParticlePos.vecExternalSide.size() ; v++)
+// 				fwrite(&stParticlePos.vecExternalSide[v], sizeof(short), 1, p_Numfile); 
 
 		}
 		fclose(p_Numfile); 
@@ -4775,15 +4791,17 @@ void ThreadLoadStepOutsideData( void* pArguments )
 			fread(&stParticlePos.iExternalSideCnt, sizeof(short), 1, p_Numfile); 
 			fread(&stParticlePos.fGranularDisintegration, sizeof(float), 1, p_Numfile); 
 
-			int nSize = 0;
-			fread(&nSize, sizeof(int), 1, p_Numfile); 
-			stParticlePos.vecExternalSide.clear();
-			short nValue = 0;
-			for(int v = 0 ; v < nSize ; v++)
-			{
-				fread(&nValue, sizeof(short), 1, p_Numfile); 
-				stParticlePos.vecExternalSide.push_back(nValue);
-			}
+// 			int nSize = 0;
+// 			fread(&nSize, sizeof(int), 1, p_Numfile); 
+// 			stParticlePos.vecExternalSide.clear();
+// 			short nValue = 0;
+// 			for(int v = 0 ; v < nSize ; v++)
+// 			{
+// 				fread(&nValue, sizeof(short), 1, p_Numfile); 
+// 				stParticlePos.vecExternalSide.push_back(nValue);
+// 			}
+
+			fread(stParticlePos.abExternalSide, sizeof(bool) * 6, 1, p_Numfile); 
 
 			strKey.Format(L"%d-%d-%d",stParticlePos.x,stParticlePos.y,stParticlePos.z);
 			g_MapOutsideData.insert(make_pair(strKey,stParticlePos));
