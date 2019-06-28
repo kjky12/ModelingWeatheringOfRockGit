@@ -7,6 +7,7 @@
 #include "Define.h"
 
 #include <cuda_runtime.h>
+//#include <helper_cuda.h>
 
 
 #define dfMAX_PART_CNT		4
@@ -31,7 +32,7 @@ class CGPUCalcRockAgingInner
 
 	//ST_PARTICLE_POS	m_st_particle_pos;
 
-	void SetInnderVoxelData(ST_PARTICLE_POS	*pstPrarticlePos);
+	void SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICLE_POS	*pstPrarticlePos);
 
 };
 
