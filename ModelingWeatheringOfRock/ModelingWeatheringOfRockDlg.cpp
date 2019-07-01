@@ -2039,14 +2039,14 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging3()
 	//_beginthread( ThreadCalcRockAging, 0, this);
 	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
 	{
-		ST_PARTICLE_POS	*pstPrarticlePos = NULL;
-		pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
-		std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
-
-		m_GPUCalcRockAgingInner;
-
-
-		M_A_DELETE(pstPrarticlePos);
+// 		ST_PARTICLE_POS	*pstPrarticlePos = NULL;
+// 		pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
+// 		std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
+// 
+// 		m_GPUCalcRockAgingInner;
+// 
+// 
+// 		M_A_DELETE(pstPrarticlePos);
 
 
 
@@ -5644,9 +5644,11 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
 	std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
 
+	m_GPUCalcRockAgingInner.SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos);
+
+
 	M_A_DELETE(pstPrarticlePos);
 
-	int a = 0;
 
 	//std::transform(test.begin(), test.end(), test_arr, extract_second());
 
