@@ -224,7 +224,7 @@ __global__ void UseCheckX(bool *bValue, bool *bResult, int nSize)
 
 void CGPUSolid::CUDA_SolidVoxelizationX(unsigned int  unVoxelSize, bool *bVoxelState, bool *bVoxelXResult)
 {
-	//m_nMaxBlockSize = 15;
+	//m_nMaxBlockSize = 15;d
 	//m_nMaxThreadSize = 16;
 
 	const unsigned int unOneThreadSize = m_nXFileVoxCnt;

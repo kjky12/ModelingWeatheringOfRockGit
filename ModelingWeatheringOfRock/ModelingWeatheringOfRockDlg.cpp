@@ -3314,6 +3314,37 @@ void ThreadSurfaceVoxelization( void* pArguments )
 }
 
 
+void CModelingWeatheringOfRockDlg::SetGpuData()
+{
+	m_GPUSolid.m_nXFileVoxCnt = m_nXFileVoxCnt;
+	m_GPUSolid.m_nYFileVoxCnt = m_nYFileVoxCnt;
+	m_GPUSolid.m_nZFileVoxCnt = m_nZFileVoxCnt;
+
+	m_GPUCalcRockAgingInner.m_nXFileVoxCnt = m_nXFileVoxCnt;
+	m_GPUCalcRockAgingInner.m_nYFileVoxCnt = m_nYFileVoxCnt;
+	m_GPUCalcRockAgingInner.m_nZFileVoxCnt = m_nZFileVoxCnt;
+
+	CString strInput = L"";
+	m_editTopRate.GetWindowText(strInput);
+	m_GPUCalcRockAgingInner.m_fTopRate = _wtof(strInput);
+	
+	m_editSideRate.GetWindowText(strInput);
+	m_GPUCalcRockAgingInner.m_fSideRate = _wtof(strInput);
+	
+	m_editBottomRate.GetWindowText(strInput);
+	m_GPUCalcRockAgingInner.m_fBottomRate = _wtof(strInput);
+
+	CString strTmp;
+	CString strTmp1;
+	//! °ø±Ø·ü °³¼ö
+	m_editCalcPorosity.GetWindowText(strTmp);
+	//! °¡¼Ó °è¼ö
+	m_editCalcMulti.GetWindowText(strTmp1);
+
+	float fCoefficient = _wtof(strTmp) * _wtof(strTmp1);	// °ø±Ø·ü °è¼ö°ª (°ø±Ø·ü * °¡¼Ó °è¼ö)
+	m_GPUCalcRockAgingInner.m_fCoefficient = fCoefficient;
+}
+
 LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lParam)
 {
 	//_endthread();
@@ -3627,9 +3658,11 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lPar
 
 		ShowTraceTime(L"GPU-GPU");
 		ShowTraceTime(L"Start Inner Voxel");
-		m_GPUSolid.m_nXFileVoxCnt = m_nXFileVoxCnt;
-		m_GPUSolid.m_nYFileVoxCnt = m_nYFileVoxCnt;
-		m_GPUSolid.m_nZFileVoxCnt = m_nZFileVoxCnt;
+
+		SetGpuData();
+
+		
+
 
 		int nSizeT = g_vecVoxelState.size();
 		memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);
@@ -4320,9 +4353,9 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 			//! ½Ã°£ ºñ±³¸¦ À§ÇÔ
 			ShowTraceTime(L"GPU-GPU");
 			ShowTraceTime(L"Start Inner Voxel");
-			m_GPUSolid.m_nXFileVoxCnt = m_nXFileVoxCnt;
-			m_GPUSolid.m_nYFileVoxCnt = m_nYFileVoxCnt;
-			m_GPUSolid.m_nZFileVoxCnt = m_nZFileVoxCnt;
+
+			SetGpuData();
+
 
 			int nSizeT = g_vecVoxelState.size();
 			memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);

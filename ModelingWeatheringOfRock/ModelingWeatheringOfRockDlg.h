@@ -384,6 +384,9 @@ public:
 	CComboBox m_comboProcessCalcRocking;
 	afx_msg void OnCbnSelchangeComboProcessCalcRocking();
 	afx_msg void OnBnClickedButtonSolidData3();
+
+
+	void SetGpuData();
 };
 
 

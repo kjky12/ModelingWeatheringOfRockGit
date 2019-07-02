@@ -30,6 +30,16 @@ class CGPUCalcRockAgingInner
 	virtual ~CGPUCalcRockAgingInner(void);
 
 
+	unsigned long long m_nXFileVoxCnt;
+	unsigned long long m_nYFileVoxCnt;
+	unsigned long long m_nZFileVoxCnt;
+
+	float m_fTopRate;
+	float m_fSideRate;
+	float m_fBottomRate;
+	float m_fCoefficient;
+
+
 	//ST_PARTICLE_POS	m_st_particle_pos;
 
 	void SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICLE_POS	*pstPrarticlePos);
