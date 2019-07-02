@@ -3336,6 +3336,8 @@ void CModelingWeatheringOfRockDlg::SetGpuData()
 
 	CString strTmp;
 	CString strTmp1;
+	CString strTmp2;
+	
 	//! 공극률 개수
 	m_editCalcPorosity.GetWindowText(strTmp);
 	//! 가속 계수
@@ -3343,6 +3345,23 @@ void CModelingWeatheringOfRockDlg::SetGpuData()
 
 	float fCoefficient = _wtof(strTmp) * _wtof(strTmp1);	// 공극률 계수값 (공극률 * 가속 계수)
 	m_GPUCalcRockAgingInner.m_fCoefficient = fCoefficient;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	//! 수분 흡수율 -> 공극에만 적용되고 공극에서 6방향으로!!
+	m_editCalcWaterInnerAbsorption.GetWindowText(strTmp);
+	//! 레이별 수분부피차감률
+	m_editCalcLayerWaterAborption.GetWindowText(strTmp1);
+	//! 수분 부피 팽창률
+	m_editCalcWaterChange.GetWindowText(strTmp2);
+
+	//! 수분 흡수율
+	m_GPUCalcRockAgingInner.m_fCalcWaterInnerAbsorption =  _wtof(strTmp);
+	//! 레이어별 수분 부피 차감율
+	m_GPUCalcRockAgingInner.m_fCalcLayerWaterAborption = _wtof(strTmp1);
+	//! 수분 팽창
+	m_GPUCalcRockAgingInner.m_fCalcWaterChange =  _wtof(strTmp2);
+
 }
 
 LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lParam)

@@ -37,6 +37,7 @@
 *.pdb
 *.ilk
 *.aps
+*.suo
 
 # Compile Folder
 /ModelingWeatheringOfRock/Debug/

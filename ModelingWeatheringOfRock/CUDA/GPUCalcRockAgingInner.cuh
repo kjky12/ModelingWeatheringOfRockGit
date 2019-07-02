@@ -39,6 +39,12 @@ class CGPUCalcRockAgingInner
 	float m_fBottomRate;
 	float m_fCoefficient;
 
+	//! 수분 흡수율
+	float m_fCalcWaterInnerAbsorption;
+	//! 레이어별 수분 부피 차감율
+	float m_fCalcLayerWaterAborption;
+	//! 수분 팽창
+	float m_fCalcWaterChange;
 
 	//ST_PARTICLE_POS	m_st_particle_pos;
 
