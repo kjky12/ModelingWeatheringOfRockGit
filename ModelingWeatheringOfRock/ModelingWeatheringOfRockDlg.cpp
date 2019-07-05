@@ -978,7 +978,7 @@ void CModelingWeatheringOfRockDlg::CalcExternalSide(int x,int y,int z,int nXVoxC
 	stParticlePos.iExternalSideCnt = 0;
 	//stParticlePos.vecExternalSide.clear();
 	memset(stParticlePos.abExternalSide, 0, 6);
-	stParticlePos.iExternalSideCnt = 6;
+	//stParticlePos.iExternalSideCnt = 6;
 	
 
 	//if(z-1 >= 0 && z-1 < nZVoxCnt)
@@ -5693,13 +5693,26 @@ struct extract_second
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 {
 	ST_PARTICLE_POS	*pstPrarticlePos = NULL;
+	ST_PARTICLE_POS	*pstPrarticlePosMask = NULL;
+	
 	pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
 	std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
 
-	m_GPUCalcRockAgingInner.SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos);
+	pstPrarticlePosMask = new ST_PARTICLE_POS[g_MapOutsideData.size()];
+	memset(pstPrarticlePosMask, NULL, sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size());
 
+	m_GPUCalcRockAgingInner.SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
 
+	
 	M_A_DELETE(pstPrarticlePos);
+
+	Sleep(500);
+
+	for (int i = 0; i < g_MapOutsideData.size(); i++)
+	{
+		printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
+	}
+
 
 
 	//std::transform(test.begin(), test.end(), test_arr, extract_second());

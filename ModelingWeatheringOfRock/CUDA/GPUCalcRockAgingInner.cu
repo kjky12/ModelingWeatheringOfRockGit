@@ -36,10 +36,12 @@ __global__ void kernelCalcRocking(int nPrarticlePosCntCuda, ST_PARTICLE_POS	*pst
     
 
 
+	//printf( "IN_OUT : %d\n", pstPrarticlePosCuda[tid].bInOut);
 	if(pstPrarticlePosCuda[tid].bInOut == true) //! 외부는 기존 입상붕괴
 	{
 		__shared__ float			fPorosity;
 		fPorosity = 0.0;
+
 
 		if(pstPrarticlePosCuda[tid].abExternalSide[nExternalSideIdx] == TRUE)
 		{
@@ -93,6 +95,9 @@ __global__ void kernelCalcRocking(int nPrarticlePosCntCuda, ST_PARTICLE_POS	*pst
 	{
 		if(pstPrarticlePosCuda[tid].sStoneType == 0) //! 공극만 처리해야한다.
 		{
+			printf( "InnerMask Check : %d\n", tid);
+
+
 			//__shared__ unsigned int sdata[6];
 
 			//1. 수분 흡수량 = 수분흡수율 - {(최대 레이어 Idx - 현재 레이어 Idx) * 레이어별 수분 차감률 * 수분흡수율 }
@@ -165,13 +170,13 @@ __global__ void kernelCalcRocking(int nPrarticlePosCntCuda, ST_PARTICLE_POS	*pst
 
 
 
-void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICLE_POS	*pstPrarticlePos)
+void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICLE_POS	*pstPrarticlePos, ST_PARTICLE_POS	*pstPrarticlePosMask)
 {
 	//! 복셀 정보
 	ST_PARTICLE_POS *pstPrarticlePosCuda;
 	ST_PARTICLE_POS *pstPrarticlePosCudaMask;
 	//! 복셀 개수
-	int *pnPrarticlePosCntCuda;
+	//int *pnPrarticlePosCntCuda;
 
 	// cudaMalloc(destination, number of byte)로 device의 메모리를 할당한다.
 	int nSizeCnt = sizeof(ST_PARTICLE_POS);
@@ -180,18 +185,26 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 		printf( "Error! Malloc \n" );
 	}
 
-		if ( cudaSuccess != cudaMalloc(&pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt))
+	if ( cudaSuccess != cudaMalloc(&pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt))
 	{
 		printf( "Error! Malloc \n" );
 	}
 
 
-	if( cudaSuccess != cudaMalloc(&pnPrarticlePosCntCuda, sizeof(int)))
+	if ( cudaSuccess != cudaMemset(pstPrarticlePosCudaMask, NULL, nSizeCnt*nPrarticlePosCnt))
+	{
+		printf( "Error! Memset \n" );
+	}
+
+	
+
+
+	/*if( cudaSuccess != cudaMalloc(&pnPrarticlePosCntCuda, sizeof(int)))
 	{
 		printf( "Error! Malloc \n" );
 
 		Sleep(1000);
-	}
+	}*/
 	//else
 	//{
 	//	printf( "ErrorGOOD \n" );
@@ -203,7 +216,7 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	
 	// cudaMemcpy(destination, source, number of byte, cudaMemcpyHostToDevice)로 호스트에서 디바이스로 메모리를 카피한다.
 	cudaMemcpy(pstPrarticlePosCuda, pstPrarticlePos, nSizeCnt*nPrarticlePosCnt, cudaMemcpyHostToDevice);
-	cudaMemcpy(pnPrarticlePosCntCuda, &nPrarticlePosCnt, sizeof(int), cudaMemcpyHostToDevice);
+	//cudaMemcpy(pnPrarticlePosCntCuda, &nPrarticlePosCnt, sizeof(int), cudaMemcpyHostToDevice);
 
 
 
@@ -220,11 +233,13 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	kernelCalcRocking<<<nBlockCnt, 6>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
 	//kernelCalcRocking<<<nBlockCnt, 32>>>(*pnPrarticlePosCntCuda, pstPrarticlePosCuda);
 
+	
+	cudaMemcpy(pstPrarticlePosMask, pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost);
 
 
 	cudaFree(pstPrarticlePosCuda);
 	cudaFree(pstPrarticlePosCudaMask);
-	cudaFree(pnPrarticlePosCntCuda);
+	//cudaFree(pnPrarticlePosCntCuda);
 
 	int a= 0;
 
