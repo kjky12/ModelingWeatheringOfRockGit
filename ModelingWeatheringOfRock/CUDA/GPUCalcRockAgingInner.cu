@@ -141,13 +141,18 @@ __global__ void kernelCalcRocking(int nPrarticlePosCntCuda, ST_PARTICLE_POS	*pst
 				if(nPos > nPrarticlePosCntCuda)
 					return;
 
-				nBreakCnt++;
+				pstPrarticlePosCudaMask[nPos].fPorosity += (fCalcWaterChange / 5.0);
 
-				__syncthreads();
+				//if(pstPrarticlePosCudaMask[nPos].fPorosity >= pstPrarticlePosCudaMask[nPos].fGranularDisintegration) // 입상붕괴 도달값에 도달하여 제거
+				//{
+				//	nBreakCnt++;
 
+				//	__syncthreads();
+				//	pstPrarticlePosCudaMask[nPos].fHaveWater = (pstPrarticlePosCuda[tid].fHaveWater + fHaveWaterTemp) / (float)(nBreakCnt + 1);
+				//	printf( "InnerMask : %d\n", nPos);
+				//}
+			
 
-				pstPrarticlePosCudaMask[nPos].fHaveWater = (pstPrarticlePosCuda[tid].fHaveWater + fHaveWaterTemp) / (float)(nBreakCnt + 1);
-				printf( "InnerMask : %d\n", nPos);
 				//pstPrarticlePosCudaMask[nPos]
 
 			}
@@ -227,11 +232,8 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 
 	
 	int nBlockCnt = nPrarticlePosCnt;
-
-	
-
 	kernelCalcRocking<<<nBlockCnt, 6>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
-	//kernelCalcRocking<<<nBlockCnt, 32>>>(*pnPrarticlePosCntCuda, pstPrarticlePosCuda);
+	
 
 	
 	cudaMemcpy(pstPrarticlePosMask, pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost);
