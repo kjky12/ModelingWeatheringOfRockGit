@@ -310,12 +310,12 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 
 
 
-			(pstPrarticlePosCuda[tid].abExternalSide[0] * fCoefficient * fTopRate)
-			 +  (pstPrarticlePosCuda[tid].abExternalSide[1] * fCoefficient * fBottomRate)
-			 +  (pstPrarticlePosCuda[tid].abExternalSide[2] * fCoefficient * fSideRate)
-			 +  (pstPrarticlePosCuda[tid].abExternalSide[3] * fCoefficient * fSideRate)
-			 +  (pstPrarticlePosCuda[tid].abExternalSide[4] * fCoefficient * fSideRate)
-			 +  (pstPrarticlePosCuda[tid].abExternalSide[5] * fCoefficient * fSideRate);
+			//(pstPrarticlePosCuda[tid].abExternalSide[0] * fCoefficient * fTopRate)
+			// +  (pstPrarticlePosCuda[tid].abExternalSide[1] * fCoefficient * fBottomRate)
+			// +  (pstPrarticlePosCuda[tid].abExternalSide[2] * fCoefficient * fSideRate)
+			// +  (pstPrarticlePosCuda[tid].abExternalSide[3] * fCoefficient * fSideRate)
+			// +  (pstPrarticlePosCuda[tid].abExternalSide[4] * fCoefficient * fSideRate)
+			// +  (pstPrarticlePosCuda[tid].abExternalSide[5] * fCoefficient * fSideRate);
 
 
 			//3. if(¼öºÐ Æ÷È­µµ * ¼öºÐ ÆØÃ¢·ü > 1.0)
