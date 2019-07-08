@@ -104,6 +104,16 @@ typedef	struct	 ST_PARTICLE_POS		//	입자 위치 구조체
 
 }ST_PARTICLE_POS;
 
+typedef	struct	 ST_PARTICLE_POS_UNIT_PROCESS		// GPU처리에서 처리되는 데이터 전용 구조체(ST_PARTICLE_POS 구조체의 일부 데이터만 사용!) -> 공유 메모리 전용으로 처리하고 메인 마스킹에 입력 예정
+{
+
+	float			fPorosity;					// 공극률(랜덤 분포도 - 라일리) -> 입은 데미지(외부와 내부 둘다 같이 사용해되 될듯하다)
+
+	float			fHaveWater;					// 수분포화도 -> 내부에 공극 주변 입자들을 처리할때
+
+}ST_PARTICLE_POS_UNIT_PROCESS;
+
+
 typedef	struct	 ST_SHOW_DATA		//	가시화를 위한 데이터 구조체
 {
 	int		nDepthOrign;		//! 초기 깊이 -> 같은 위치를 ++로 카운트해줌(초기화 시에만)
