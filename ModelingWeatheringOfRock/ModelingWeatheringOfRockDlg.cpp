@@ -5704,16 +5704,17 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	m_GPUCalcRockAgingInner.SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
 
 	
+
+	Sleep(500);
+
+	for (int i = 0; i < g_MapOutsideData.size(); i++)
+	{
+		printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
+	}
+
+
 	M_A_DELETE(pstPrarticlePos);
-
-// 	Sleep(500);
-// 
-// 	for (int i = 0; i < g_MapOutsideData.size(); i++)
-// 	{
-// 		printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
-// 	}
-
-
+	M_A_DELETE(pstPrarticlePosMask);
 
 	//std::transform(test.begin(), test.end(), test_arr, extract_second());
 

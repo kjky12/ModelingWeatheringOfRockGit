@@ -324,9 +324,7 @@ __device__ void ViewMaskData(ST_PARTICLE_POS	*pstPrarticlePosCudaMask, int tid, 
 	}
 
 
-	printf( "New Tid : %d -> Porosity:%f,%f,%f,%f,%f,%f,%f\n	\
-			Water:%f,%f,%f,%f,%f,%f,%f\n\
-		", tid, 
+	printf( "New Tid : %d -> Porosity:%f,%f,%f,%f,%f,%f,%f\nWater:%f,%f,%f,%f,%f,%f,%f\n", tid, 
 		f[0],
 		f[1],
 		f[2],
@@ -426,7 +424,7 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	//if(tid > nPrarticlePosCntCuda)
 	//	return;
 
-	//printf("tid : %d\n", tid);
+	
 	//return;
 	//int nExternalSideIdx = threadIdx.x % 6;
     //printf( "x:%d\n", nPrarticlePosCntCuda);
@@ -434,6 +432,7 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	if(tid > nPrarticlePosCntCuda)
 		return;
 
+	//printf("tid : %d\n", tid);
 
 	extern __shared__ ST_PARTICLE_POS_UNIT_PROCESS			astParticle_pos_unitProcess[]; //->0:본인, 1:상,2:하,3:좌,4:우,5:앞,6뒤
 	memset(astParticle_pos_unitProcess, NULL, sizeof(ST_PARTICLE_POS_UNIT_PROCESS) * nThreadCnt * 7);
@@ -511,6 +510,7 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	}
 
 
+
 	pstPrarticlePosCudaMask[tid].fPorosity += astParticle_pos_unitProcess[threadIdx.x].fPorosity;
 	pstPrarticlePosCudaMask[tid].fHaveWater += astParticle_pos_unitProcess[threadIdx.x].fHaveWater;
 	
@@ -535,10 +535,11 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 
 	//InputMaskDataToSharedMem(pstPrarticlePosCudaMask, astParticle_pos_unitProcess, tid, threadIdx.x, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
 
-	/*printf("\n");
-	ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);*/
-
+	//printf("1\n");
+	ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
 	
+	printf("tid : %d\n", tid);
+
 	//pstPrarticlePosCudaMask[tid].fPorosity = fPorosity;
 
 } 
@@ -554,7 +555,7 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 
 	// cudaMalloc(destination, number of byte)로 device의 메모리를 할당한다.
 	int nSizeCnt = sizeof(ST_PARTICLE_POS);
-	if ( cudaSuccess != cudaMalloc(&pstPrarticlePosCuda, nSizeCnt*nPrarticlePosCnt))
+	while ( cudaSuccess != cudaMalloc(&pstPrarticlePosCuda, nSizeCnt*nPrarticlePosCnt))
 	{
 		printf( "Error! Malloc \n" );
 	}
@@ -605,12 +606,13 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	//kernelCalcRocking<<<4, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
 	
 
+	printf("TEST\n");
 	
 	cudaMemcpy(pstPrarticlePosMask, pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost);
 
 
-	cudaFree(pstPrarticlePosCuda);
-	cudaFree(pstPrarticlePosCudaMask);
+	//cudaFree(pstPrarticlePosCuda);
+	//cudaFree(pstPrarticlePosCudaMask);
 	//cudaFree(pnPrarticlePosCntCuda);
 
 	int a= 0;
