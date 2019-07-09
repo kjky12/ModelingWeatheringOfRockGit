@@ -5706,12 +5706,12 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	
 	M_A_DELETE(pstPrarticlePos);
 
-	Sleep(500);
-
-	for (int i = 0; i < g_MapOutsideData.size(); i++)
-	{
-		printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
-	}
+// 	Sleep(500);
+// 
+// 	for (int i = 0; i < g_MapOutsideData.size(); i++)
+// 	{
+// 		printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
+// 	}
 
 
 
