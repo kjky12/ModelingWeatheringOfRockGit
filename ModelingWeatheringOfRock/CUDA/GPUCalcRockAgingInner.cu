@@ -537,10 +537,27 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	pstPrarticlePosCudaMask[tid + 1].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 6].fPorosity;
 	pstPrarticlePosCudaMask[tid + 1].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 6].fHaveWater;
 	
-
+	//ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
 
 } 
 
+
+__global__ void kernelCalcRockingMasking(int nPrarticlePosCntCuda, ST_PARTICLE_POS	*pstPrarticlePosCuda, ST_PARTICLE_POS	*pstPrarticlePosCudaMask)
+{ 
+	// 수많은 스레드가 동시에 처리한다. // 따라서 threadIdx(스레드 인덱스)를 통해서 스레드들을 구별한다. 
+	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(tid > nPrarticlePosCntCuda)
+		return;
+
+	//printf("Prev:%03d->%f\n",tid, pstPrarticlePosCuda[tid].fPorosity);
+
+	pstPrarticlePosCuda[tid].fPorosity = pstPrarticlePosCuda[tid].fPorosity + pstPrarticlePosCudaMask[tid].fPorosity;
+	pstPrarticlePosCuda[tid].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater + pstPrarticlePosCudaMask[tid].fHaveWater;
+	
+	//printf("Afte:%03d->%f\n",tid, pstPrarticlePosCuda[tid].fPorosity);
+
+}
 
 void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICLE_POS	*pstPrarticlePos, ST_PARTICLE_POS	*pstPrarticlePosMask)
 {
@@ -603,12 +620,14 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	kernelCalcRocking<<<nBlockCnt, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
 	//kernelCalcRocking<<<4, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
 	
+	kernelCalcRockingMasking<<<nBlockCnt, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask);
+
 	//cudaDeviceSynchronize();
 	//cudaStreamSynchronize(cudaStream);
 
 	printf("TEST\n");
 	
-	if ( cudaSuccess != cudaMemcpy(pstPrarticlePosMask, pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost))
+	if ( cudaSuccess != cudaMemcpy(pstPrarticlePos, pstPrarticlePosCuda, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost))
 	{
 		printf( "Error! Copy \n" );
 	}
