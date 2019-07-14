@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "Windows.h"
 
+#define dfSHARED_MEMORY_SIZE	32*7
 
 __device__ __host__ int gcd(int a, int b)
 {
@@ -417,6 +418,8 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 								  float fCalcWaterInnerAbsorption, float fCalcLayerWaterAborption, float fCalcWaterChange
 								  )
 { 
+	//return;
+
 	 // 수많은 스레드가 동시에 처리한다. // 따라서 threadIdx(스레드 인덱스)를 통해서 스레드들을 구별한다. 
 	//int tid = blockIdx.x * blockDim.x+ threadIdx.x;	
 	int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -434,8 +437,10 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 
 	//printf("tid : %d\n", tid);
 
-	extern __shared__ ST_PARTICLE_POS_UNIT_PROCESS			astParticle_pos_unitProcess[]; //->0:본인, 1:상,2:하,3:좌,4:우,5:앞,6뒤
-	memset(astParticle_pos_unitProcess, NULL, sizeof(ST_PARTICLE_POS_UNIT_PROCESS) * nThreadCnt * 7);
+	//extern __shared__ ST_PARTICLE_POS_UNIT_PROCESS			astParticle_pos_unitProcess[]; //->0:본인, 1:상,2:하,3:좌,4:우,5:앞,6뒤
+	//__shared__ ST_PARTICLE_POS_UNIT_PROCESS			astParticle_pos_unitProcess[32 * 7]; //->0:본인, 1:상,2:하,3:좌,4:우,5:앞,6뒤
+	__shared__ ST_PARTICLE_POS_UNIT_PROCESS			astParticle_pos_unitProcess[dfSHARED_MEMORY_SIZE]; //->0:본인, 1:상,2:하,3:좌,4:우,5:앞,6뒤
+	memset(astParticle_pos_unitProcess, NULL, sizeof(ST_PARTICLE_POS_UNIT_PROCESS) * dfSHARED_MEMORY_SIZE);
 	//memset(astParticle_pos_unitProcess, NULL, sizeof(ST_PARTICLE_POS_UNIT_PROCESS) * lcm(nThreadCnt, 6));
 	__syncthreads();
 
@@ -533,14 +538,6 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	pstPrarticlePosCudaMask[tid + 1].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 6].fHaveWater;
 	
 
-	//InputMaskDataToSharedMem(pstPrarticlePosCudaMask, astParticle_pos_unitProcess, tid, threadIdx.x, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
-
-	//printf("1\n");
-	ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
-	
-	printf("tid : %d\n", tid);
-
-	//pstPrarticlePosCudaMask[tid].fPorosity = fPorosity;
 
 } 
 
@@ -555,7 +552,7 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 
 	// cudaMalloc(destination, number of byte)로 device의 메모리를 할당한다.
 	int nSizeCnt = sizeof(ST_PARTICLE_POS);
-	while ( cudaSuccess != cudaMalloc(&pstPrarticlePosCuda, nSizeCnt*nPrarticlePosCnt))
+	if ( cudaSuccess != cudaMalloc(&pstPrarticlePosCuda, nSizeCnt*nPrarticlePosCnt))
 	{
 		printf( "Error! Malloc \n" );
 	}
@@ -566,10 +563,10 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	}
 
 
-	if ( cudaSuccess != cudaMemset(pstPrarticlePosCudaMask, NULL, nSizeCnt*nPrarticlePosCnt))
+	/*if ( cudaSuccess != cudaMemset(pstPrarticlePosCudaMask, NULL, nSizeCnt*nPrarticlePosCnt))
 	{
 		printf( "Error! Memset \n" );
-	}
+	}*/
 
 
 	/*if( cudaSuccess != cudaMalloc(&pnPrarticlePosCntCuda, sizeof(int)))
@@ -600,20 +597,29 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	
 	//! 최소 공배수
 	int nThreadCnt = 32; // 32개 복셀 처리
-	int nSharedMemoryCnt = lcm(nThreadCnt, 6); //92
+	//int nSharedMemoryCnt = lcm(nThreadCnt, 6); //92
 	int nBlockCnt = (nPrarticlePosCnt / nThreadCnt) + 1;
-	kernelCalcRocking<<<nBlockCnt, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
+	//kernelCalcRocking<<<nBlockCnt, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
+	kernelCalcRocking<<<nBlockCnt, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
 	//kernelCalcRocking<<<4, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
 	
+	//cudaDeviceSynchronize();
+	//cudaStreamSynchronize(cudaStream);
 
 	printf("TEST\n");
 	
-	cudaMemcpy(pstPrarticlePosMask, pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost);
+	if ( cudaSuccess != cudaMemcpy(pstPrarticlePosMask, pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost))
+	{
+		printf( "Error! Copy \n" );
+	}
 
 
-	//cudaFree(pstPrarticlePosCuda);
-	//cudaFree(pstPrarticlePosCudaMask);
+	cudaFree(pstPrarticlePosCuda);
+	cudaFree(pstPrarticlePosCudaMask);
 	//cudaFree(pnPrarticlePosCntCuda);
+
+	//pstPrarticlePosMask[0].x = 1;
+
 
 	int a= 0;
 

@@ -5689,7 +5689,6 @@ struct extract_second
 	}
 };
 
-
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 {
 	ST_PARTICLE_POS	*pstPrarticlePos = NULL;
@@ -5701,11 +5700,13 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	pstPrarticlePosMask = new ST_PARTICLE_POS[g_MapOutsideData.size()];
 	memset(pstPrarticlePosMask, NULL, sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size());
 
+	//SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
+
 	m_GPUCalcRockAgingInner.SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
 
 	
 
-	Sleep(500);
+	//Sleep(500);
 
 	for (int i = 0; i < g_MapOutsideData.size(); i++)
 	{
@@ -5716,7 +5717,6 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	M_A_DELETE(pstPrarticlePos);
 	M_A_DELETE(pstPrarticlePosMask);
 
-	//std::transform(test.begin(), test.end(), test_arr, extract_second());
 
 
 
