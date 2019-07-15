@@ -5711,9 +5711,9 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	//std::transform(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin(), extract_second());
 
 	
+	ShowTraceTime(L"GPU - Calc Rocking Endi" , 1);
 
-
-
+	ShowTraceTime(L"GPU - Sync Start");
 
 	//! 외부에 공극이 있는경우 연결되있는 공극을 전부 없애기 위해..
 	vector<CString> vecDeleParticleInsideCheck;
@@ -5779,7 +5779,9 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	//iterOutsideDataTmp->second.fPorosity;
 
 
+	ShowTraceTime(L"GPU - Sync Endi" , 1);
 
+	ShowTraceTime(L"GPU - Delete Start");
 
 	vector<ST_DELETE_VOXEL_POS> deleteVoxelPos;
 
@@ -5861,7 +5863,9 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		
 	}
 	
+	ShowTraceTime(L"GPU - Delete Endi" , 1);
 
+	ShowTraceTime(L"GPU - Change Start");
 
 	//////////////////////////////////////////////////////////////////////////
 	//! 내부 입자 -> 공극 변환 처리(위에서 전부 계산 이후 처리 해야 중복 수행 방지됨)
@@ -5886,6 +5890,11 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	}
 
 
+	ShowTraceTime(L"GPU - Change Endi" , 1);
+
+	ShowTraceTime(L"GPU - Recalc Start");
+
+
 	//  [2/5/2019 kjky12] 전체 복셀을 미리 생성하기 때문에 삭제 및 재계산을 할 필요가 없다.
 	for(int d = 0 ; d < deleteVoxelPos.size() ; d++)
 	{
@@ -5906,6 +5915,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		g_MapOutsideData.insert(make_pair(iterOutsideDataTmp->first,iterOutsideDataTmp->second));
 	}
 
+	ShowTraceTime(L"GPU - Recalc Endi" , 1);
 
 	vecDeleParticle.clear();
 	m_mapInsertParticle.clear();
@@ -5919,6 +5929,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	strTmp.Format(L"%d",m_nCalcTryCnt);		
 	m_editCalcTryCnt.SetWindowText(strTmp);
 
+	ShowTraceTime(L"GPU - Show Start");
 
 	int nShowCnt = 6;
 	//g_MapShowData.clear();
@@ -5929,6 +5940,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		UpdateShowData(v);
 	}
 
+	ShowTraceTime(L"GPU - Show Endi" , 1);
 
 
 	M_A_DELETE(pstPrarticlePos);
@@ -5938,7 +5950,6 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	SendMessage(WM_FINISH_SIM_ONE_STEP_MSG, m_bStopCalc,0);
 
 
-	ShowTraceTime(L"GPU - Calc Rocking Endi" , 1);
 
 
 }
