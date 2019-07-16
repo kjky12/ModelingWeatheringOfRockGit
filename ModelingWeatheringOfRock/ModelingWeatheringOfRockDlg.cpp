@@ -1286,17 +1286,21 @@ void ThreadCalcExternalSide( void* pArguments )
 
 	//////////////////////////////////////////////////////////////////////////
 	//! 가시화를 위한 가시화 변수 초기화 6방향
-	int nShowCnt = 6;
-	g_MapShowData.clear();
-	g_mapShowDataLink.clear();
-	for (int v=  0; v < nShowCnt; v++)
-	{
-		map<ST_VOXEL_3D_POS_VIEWER, ST_SHOW_DATA> mapShowData;
-		g_MapShowData.insert(make_pair(v,mapShowData));
- 		vector<vector<ST_VOXEL_3D_POS_VIEWER>>						vecShowDataLink;	//! 가시화를위해 연결..
- 		g_mapShowDataLink.insert(make_pair(v,vecShowDataLink));
-		pParent->InitShowData(v);
-	}
+// 	int nShowCnt = 6;
+// 	g_MapShowData.clear();
+// 	g_mapShowDataLink.clear();
+// 	for (int v=  0; v < nShowCnt; v++)
+// 	{
+// 		map<ST_VOXEL_3D_POS_VIEWER, ST_SHOW_DATA> mapShowData;
+// 		g_MapShowData.insert(make_pair(v,mapShowData));
+//  		vector<vector<ST_VOXEL_3D_POS_VIEWER>>						vecShowDataLink;	//! 가시화를위해 연결..
+//  		g_mapShowDataLink.insert(make_pair(v,vecShowDataLink));
+// 		pParent->InitShowData(v);
+// 
+// 		strProcessStatus.Format(L"Show : %d", v);
+// 		pParent->m_editProcessStatus.SetWindowTextW(strProcessStatus);
+// 
+// 	}
 
 
 
@@ -2021,7 +2025,10 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging2()
 	else//CPU
 	{
 		if(CalcRockAgingSetData())
+		{
+
 			_beginthread( ThreadCalcRockAging, 0, this);
+		}
 
 	}
 
@@ -2065,7 +2072,7 @@ void ThreadCalcRockAging( void* pArguments )
 {
 	CModelingWeatheringOfRockDlg* pParent = (CModelingWeatheringOfRockDlg*)pArguments;
 
-
+	pParent->ShowTraceTime(L"CPU - CalcRockAging Start");
 
 	float fXSize = 0.0;
 	float fYSize = 0.0;
@@ -2527,19 +2534,21 @@ void ThreadCalcRockAging( void* pArguments )
 	pParent->m_editCalcTryCnt.SetWindowText(strTmp);
 
 
-	int nShowCnt = 6;
-	//g_MapShowData.clear();
-	for (int v=  0; v < nShowCnt; v++)
-	{
-// 		map<ST_VOXEL_3D_POS, ST_SHOW_DATA> mapShowData;
-// 		g_MapShowData.insert(make_pair(v,mapShowData));
-		pParent->UpdateShowData(v);
-	}
+// 	int nShowCnt = 6;
+// 	//g_MapShowData.clear();
+// 	for (int v=  0; v < nShowCnt; v++)
+// 	{
+// // 		map<ST_VOXEL_3D_POS, ST_SHOW_DATA> mapShowData;
+// // 		g_MapShowData.insert(make_pair(v,mapShowData));
+// 		pParent->UpdateShowData(v);
+// 	}
 
 
 
 	pParent->SendMessage(WM_FINISH_SIM_ONE_STEP_MSG,pParent->m_bStopCalc,0);
 
+
+	pParent->ShowTraceTime(L"CPU - CalcRockAging End", 1);
 
 
 }
@@ -5691,6 +5700,8 @@ struct extract_second
 
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 {
+	m_nCalcTryCnt++;
+
 	ShowTraceTime(L"GPU - Calc Rocking Start");
 
 	ST_PARTICLE_POS	*pstPrarticlePos = NULL;
@@ -5711,9 +5722,9 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	//std::transform(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin(), extract_second());
 
 	
-	ShowTraceTime(L"GPU - Calc Rocking Endi" , 1);
-
-	ShowTraceTime(L"GPU - Sync Start");
+// 	ShowTraceTime(L"GPU - Calc Rocking Endi" , 1);
+// 
+// 	ShowTraceTime(L"GPU - Sync Start");
 
 	//! 외부에 공극이 있는경우 연결되있는 공극을 전부 없애기 위해..
 	vector<CString> vecDeleParticleInsideCheck;
@@ -5779,9 +5790,9 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	//iterOutsideDataTmp->second.fPorosity;
 
 
-	ShowTraceTime(L"GPU - Sync Endi" , 1);
-
-	ShowTraceTime(L"GPU - Delete Start");
+// 	ShowTraceTime(L"GPU - Sync Endi" , 1);
+// 
+// 	ShowTraceTime(L"GPU - Delete Start");
 
 	vector<ST_DELETE_VOXEL_POS> deleteVoxelPos;
 
@@ -5863,9 +5874,9 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		
 	}
 	
-	ShowTraceTime(L"GPU - Delete Endi" , 1);
-
-	ShowTraceTime(L"GPU - Change Start");
+// 	ShowTraceTime(L"GPU - Delete Endi" , 1);
+// 
+// 	ShowTraceTime(L"GPU - Change Start");
 
 	//////////////////////////////////////////////////////////////////////////
 	//! 내부 입자 -> 공극 변환 처리(위에서 전부 계산 이후 처리 해야 중복 수행 방지됨)
@@ -5890,9 +5901,9 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	}
 
 
-	ShowTraceTime(L"GPU - Change Endi" , 1);
-
-	ShowTraceTime(L"GPU - Recalc Start");
+// 	ShowTraceTime(L"GPU - Change Endi" , 1);
+// 
+// 	ShowTraceTime(L"GPU - Recalc Start");
 
 
 	//  [2/5/2019 kjky12] 전체 복셀을 미리 생성하기 때문에 삭제 및 재계산을 할 필요가 없다.
@@ -5929,18 +5940,19 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	strTmp.Format(L"%d",m_nCalcTryCnt);		
 	m_editCalcTryCnt.SetWindowText(strTmp);
 
-	ShowTraceTime(L"GPU - Show Start");
+// 	ShowTraceTime(L"GPU - Show Start");
+// 
+// 	int nShowCnt = 6;
+// 	//g_MapShowData.clear();
+// 	for (int v=  0; v < nShowCnt; v++)
+// 	{
+// // 		map<ST_VOXEL_3D_POS, ST_SHOW_DATA> mapShowData;
+// // 		g_MapShowData.insert(make_pair(v,mapShowData));
+// 		UpdateShowData(v);
+// 	}
 
-	int nShowCnt = 6;
-	//g_MapShowData.clear();
-	for (int v=  0; v < nShowCnt; v++)
-	{
-// 		map<ST_VOXEL_3D_POS, ST_SHOW_DATA> mapShowData;
-// 		g_MapShowData.insert(make_pair(v,mapShowData));
-		UpdateShowData(v);
-	}
-
-	ShowTraceTime(L"GPU - Show Endi" , 1);
+// 	ShowTraceTime(L"GPU - Show Endi" , 1);
+// 	ShowTraceTime(L"GPU - Show Endi" , 1);
 
 
 	M_A_DELETE(pstPrarticlePos);
