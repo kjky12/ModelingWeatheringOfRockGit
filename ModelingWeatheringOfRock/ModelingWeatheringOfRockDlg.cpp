@@ -344,6 +344,8 @@ BEGIN_MESSAGE_MAP(CModelingWeatheringOfRockDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_COMBO_USE_BLOCK_THREAD, &CModelingWeatheringOfRockDlg::OnCbnSelchangeComboUseBlockThread)
 	ON_CBN_SELCHANGE(IDC_COMBO_PROCESS_CALC_ROCKING, &CModelingWeatheringOfRockDlg::OnCbnSelchangeComboProcessCalcRocking)
 	ON_BN_CLICKED(IDC_BUTTON_SOLID_DATA3, &CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3)
+	ON_BN_CLICKED(IDC_BUTTON5, &CModelingWeatheringOfRockDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON_OBJ_FILE_MODELING5, &CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5)
 END_MESSAGE_MAP()
 
 
@@ -2394,6 +2396,8 @@ void ThreadCalcRockAging( void* pArguments )
 		//	iterBaseRockData->second = VecZBaseRockParticle;
 	}
 
+	pParent->ShowTraceTime(L"CPU - CalcRockAging End", 1);
+	pParent->ShowTraceTime(L"CPU - Else Start");
 
 	vector<ST_DELETE_VOXEL_POS> deleteVoxelPos;
 
@@ -2548,7 +2552,7 @@ void ThreadCalcRockAging( void* pArguments )
 	pParent->SendMessage(WM_FINISH_SIM_ONE_STEP_MSG,pParent->m_bStopCalc,0);
 
 
-	pParent->ShowTraceTime(L"CPU - CalcRockAging End", 1);
+	pParent->ShowTraceTime(L"CPU - Else End", 1);
 
 
 }
@@ -4454,6 +4458,8 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 
 		g_bVoxelComplete = TRUE;
 		UpdateMainView(FALSE);
+
+		OnBnClickedButton5();
 	}
 	else
 	{
@@ -5701,23 +5707,23 @@ struct extract_second
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 {
 	m_nCalcTryCnt++;
-
-	ShowTraceTime(L"GPU - Calc Rocking Start");
-
+	
 	ST_PARTICLE_POS	*pstPrarticlePos = NULL;
 	ST_PARTICLE_POS	*pstPrarticlePosMask = NULL;
-	
 	pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
-	std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
-
 	pstPrarticlePosMask = new ST_PARTICLE_POS[g_MapOutsideData.size()];
 	memset(pstPrarticlePosMask, NULL, sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size());
 
+
+	std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
+
 	//SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
+	ShowTraceTime(L"GPU - Calc Rocking Start");
 
 	m_GPUCalcRockAgingInner.SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
 	
 	//std::copy(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin());
+	ShowTraceTime(L"GPU - Calc Rocking End", 1);
 
 	//std::transform(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin(), extract_second());
 
@@ -5725,6 +5731,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 // 	ShowTraceTime(L"GPU - Calc Rocking Endi" , 1);
 // 
 // 	ShowTraceTime(L"GPU - Sync Start");
+	ShowTraceTime(L"GPU - Else Start" , 1);
 
 	//! 외부에 공극이 있는경우 연결되있는 공극을 전부 없애기 위해..
 	vector<CString> vecDeleParticleInsideCheck;
@@ -5764,10 +5771,10 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	int i = 0;
 	for(iterOutsideDataTmp = g_MapOutsideData.begin(); iterOutsideDataTmp != g_MapOutsideData.end(); iterOutsideDataTmp++)
 	{
-		if(iterOutsideDataTmp->second.fPorosity != pstPrarticlePos[i].fPorosity)
-		{
-			int a = 0;
-		}
+// 		if(iterOutsideDataTmp->second.fPorosity != pstPrarticlePos[i].fPorosity)
+// 		{
+// 			int a = 0;
+// 		}
 
 		iterOutsideDataTmp->second = pstPrarticlePos[i];
 		//printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
@@ -5926,7 +5933,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		g_MapOutsideData.insert(make_pair(iterOutsideDataTmp->first,iterOutsideDataTmp->second));
 	}
 
-	ShowTraceTime(L"GPU - Recalc Endi" , 1);
+	ShowTraceTime(L"GPU - Else Endi" , 1);
 
 	vecDeleParticle.clear();
 	m_mapInsertParticle.clear();
@@ -5963,5 +5970,128 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 
 
 
+
+}
+
+
+void CModelingWeatheringOfRockDlg::OnBnClickedButton5()
+{
+	CString strPath = gf_GetModulePath() + L"Origin\\";
+	::CreateDirectory(strPath, NULL);
+
+	
+	int nIdxS = g_strFilePathName.ReverseFind('\\');
+	int nIdxE = g_strFilePathName.Find(L".OBJ");
+	CString strModel = g_strFilePathName.Mid(nIdxS + 1, nIdxE - (nIdxS + 1));
+
+	CString strFileName = L"";
+	strFileName.Format(L"M_%s_P_%d_S_%d.dat", strModel, g_nDivideCnt + 4, m_nCalcTryCnt);
+	CString strNumPath = strPath + strFileName;
+
+	FILE *p_Numfile = _wfopen(strNumPath, L"wb"); 
+
+	if(NULL != p_Numfile )
+	{ 
+
+		ST_PARTICLE_POS stParticlePos;
+		map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;
+		int nTotalCnt = g_MapOutsideData.size();
+		fwrite(&nTotalCnt, sizeof(int), 1, p_Numfile); 
+
+		for(iterOutsideData = g_MapOutsideData.begin() ; iterOutsideData != g_MapOutsideData.end() ; iterOutsideData++)
+		{
+			stParticlePos = iterOutsideData->second;
+
+			fwrite(&stParticlePos, sizeof(ST_PARTICLE_POS), 1, p_Numfile); 
+
+
+
+		}
+		fclose(p_Numfile); 
+	}
+
+}
+
+
+void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5()
+{
+		//g_strFilePathName =L"";
+
+		CFileDialog FileDlg(TRUE, _T("dat"), NULL, OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_PATHMUSTEXIST, _T("dat File(*.dat)|*.dat||") );
+		if (FileDlg.DoModal() == IDOK )
+		{
+			//g_strFilePathName = FileDlg.GetPathName();
+		}
+		else
+		{
+			return;
+		}
+
+// 		if(g_strFilePathName.IsEmpty())
+// 			return;
+
+
+// 	CString strFileName = L"";
+ 	CString strKey= L"";
+// 	CString strPath = gf_GetModulePath() + L"Origin\\";
+// 	strFileName.Format(L"Setp%09d.dat",pParent->m_nLoadStep);
+	CString strNumPath = FileDlg.GetPathName();;
+
+	FILE *p_Numfile = _wfopen(strNumPath, L"rb"); 
+
+	CString strProcessStatus;
+
+
+	g_MapOutsideData.clear();
+	if(NULL != p_Numfile )
+	{ 
+		map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;
+
+		int nTotalCnt = 0;
+		fread(&nTotalCnt, sizeof(int), 1, p_Numfile); 
+
+		for(int n = 0 ; n < nTotalCnt ; n++)
+		{
+			ST_PARTICLE_POS stParticlePos;
+
+			fread(&stParticlePos, sizeof(ST_PARTICLE_POS), 1, p_Numfile); 
+		
+			strKey.Format(L"%d-%d-%d",stParticlePos.x,stParticlePos.y,stParticlePos.z);
+			g_MapOutsideData.insert(make_pair(strKey,stParticlePos));
+
+			strProcessStatus.Format(L"Loading Progress : %.2f %%",float((float)n / (float)nTotalCnt) * 100.0);
+			m_editProcessStatus.SetWindowTextW(strProcessStatus);
+		}
+		fclose(p_Numfile); 
+	}
+
+	
+	//////////////////////////////////////////////////////////////////////////
+	//! 입자 종류 카운트
+	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;
+	int nTotalCnt = g_MapOutsideData.size();
+	fwrite(&nTotalCnt, sizeof(int), 1, p_Numfile); 
+
+	for(iterOutsideData = g_MapOutsideData.begin() ; iterOutsideData != g_MapOutsideData.end() ; iterOutsideData++)
+	{
+		map<int,int>::iterator	iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideData->second.sStoneType);
+		if(iterStoneCnt != m_mapStoneTypeCnt.end())
+			iterStoneCnt->second++;
+		else
+			m_mapStoneTypeCnt.insert(make_pair(iterOutsideData->second.sStoneType, 1));
+
+		m_nCalcTotalCnt++;
+		m_nSolidTotalCnt++; //GetTotalCntFromSolidFile();
+
+	}
+
+	CString strTmp = L"";
+	strTmp.Format(L"%d",m_nCalcTotalCnt);
+	m_editTotalSolidCnt.SetWindowTextW(strTmp);
+
+	m_editProcessStatus.SetWindowTextW(L"Load Finsh");
+
+
+	SendMessage(WM_FINISH_SOLID_VOXEL_MSG,5,0);	
 
 }

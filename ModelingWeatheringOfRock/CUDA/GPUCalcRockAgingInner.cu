@@ -617,12 +617,16 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	//int nSharedMemoryCnt = lcm(nThreadCnt, 6); //92
 	int nBlockCnt = (nPrarticlePosCnt / nThreadCnt) + 1;
 	//kernelCalcRocking<<<nBlockCnt, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
-	kernelCalcRocking<<<nBlockCnt, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
+	int nBlockStep = 128 * 2;
+	for(int n = 0; n < nBlockCnt; n += nBlockStep)
+	{
+		int nBlockStepTemp = nBlockStep;	
+		if(nBlockCnt - n < nBlockStep)
+			nBlockStepTemp = nBlockCnt - n;
+		kernelCalcRocking<<<nBlockStep, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);		
+	}
 	//kernelCalcRocking<<<4, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
 	
-	//cudaDeviceSynchronize();
-
-
 	kernelCalcRockingMasking<<<nBlockCnt, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask);
 	
 	//cudaDeviceSynchronize();

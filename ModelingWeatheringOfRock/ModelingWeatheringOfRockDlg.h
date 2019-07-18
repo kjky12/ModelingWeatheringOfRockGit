@@ -387,6 +387,8 @@ public:
 
 
 	void SetGpuData();
+	afx_msg void OnBnClickedButton5();
+	afx_msg void OnBnClickedButtonObjFileModeling5();
 };
 
 
