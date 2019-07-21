@@ -2912,12 +2912,8 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling()
 	}
 	else 
 	{
-		g_vecVoxelXStateCuda.clear();
-		g_vecVoxelYStateCuda.clear();
-		g_vecVoxelZStateCuda.clear();
 		g_vecVoxelTotalCuda.clear();
 
-		g_vecVoxelTotalCudaTemp.clear();
 	}
 	
 
@@ -3595,12 +3591,7 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lPar
 		g_vecVoxelZState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 		g_vecVoxelTotal.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 
-		g_vecVoxelXStateCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-		g_vecVoxelYStateCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-		g_vecVoxelZStateCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 		g_vecVoxelTotalCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-
-		g_vecVoxelTotalCudaTemp.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 
 		for (int v= 0; v < dfTOTAL_COUNT; v++)
 		{
@@ -3693,9 +3684,6 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lPar
 
 		SetGpuData();
 
-		
-
-
 		int nSizeT = g_vecVoxelState.size();
 		memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);
 		memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
@@ -3717,7 +3705,7 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lPar
 
 		memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
 		m_GPUSolid.CUDA_SolidVoxelizationXYZBlock(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
-		std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCudaTemp.begin());
+		std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
 
 		ShowTraceTime(L"End Inner Voxel -> Version 2" , 1);
 
@@ -3725,7 +3713,7 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lPar
 		for (int v = 0; v < g_vecVoxelTotalCuda.size(); v++)
 		{
 			//if(g_vecVoxelTotalCudaTemp[v] != g_vecVoxelTotalCuda[v])
-			if(g_vecVoxelTotalCudaTemp[v] != g_vecVoxelTotalCuda[v] && g_vecVoxelTotalCuda[v] != g_vecVoxelTotal[v])
+			if(g_vecVoxelTotalCuda[v] != g_vecVoxelTotal[v])
 			{
 				nErrorCnt++;
 			}
@@ -4106,32 +4094,6 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 {
 	if(wParam == 0)
 	{
-//		ShowTraceTime(L"End X Voxel", 1);
-
-// 		int nErrorCnt = 0;
-// 		for (int v = 0; v < g_vecVoxelXState.size(); v++)
-// 		{
-// 			if(g_vecVoxelXState[v] != g_vecVoxelXStateCuda[v])
-// 			{
-// 				nErrorCnt++;
-// 				// 				CString strFormat = L"";
-// 				// 				strFormat.Format(L"DataIdx : %d\n", v);
-// 				// 				TRACE(strFormat);
-// 			}
-// 		}
-// 		CString strTempT = L"";
-// 		if(nErrorCnt > 0)
-// 		{
-// 			strTempT.Format(L"X : Error Cnt : %d", nErrorCnt);
-// 			ShowTraceTime(strTempT , 2);
-// 		}
-// 		else
-// 		{
-// 			strTempT.Format(L"X : GOOD");
-// 			ShowTraceTime(strTempT, 2);
-// 		}
-// 		g_vecVoxelXStateCuda.clear();
-
 		//! 파일 처리
 		if(m_nComboProcessSel == dfDATA_PROCESS_FILE)
 		{
@@ -4383,58 +4345,58 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 		{
 			//////////////////////////////////////////////////////////////////////////
 			//! 시간 비교를 위함
-			ShowTraceTime(L"GPU-GPU");
-			ShowTraceTime(L"Start Inner Voxel");
-
-			SetGpuData();
-
-
-			int nSizeT = g_vecVoxelState.size();
-			memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);
-			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
-			copy(g_vecVoxelState.begin(), g_vecVoxelState.begin() + nSizeT, m_bDataTmp[dfVOXEL_IDX]);
-			ShowTraceTime(L"External Voxel CPU->GPU COPY" , 1);
-
-			ShowTraceTime(L"Start Inner Voxel -> Version 1");
-
-			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
-			m_GPUSolid.CUDA_SolidVoxelizationXYZ(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
-			std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
-
-			ShowTraceTime(L"End Inner Voxel -> Version 1" , 1);
-
-
-			Sleep(500);
-
-			ShowTraceTime(L"Start Inner Voxel -> Version 2");
-
-			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
-			m_GPUSolid.CUDA_SolidVoxelizationXYZBlock(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
-			std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCudaTemp.begin());
-
-			ShowTraceTime(L"End Inner Voxel -> Version 2" , 1);
-			
-			int nErrorCnt = 0;
-			for (int v = 0; v < g_vecVoxelTotalCuda.size(); v++)
-			{
-				if(g_vecVoxelTotalCudaTemp[v] != g_vecVoxelTotalCuda[v] && g_vecVoxelTotalCuda[v] != g_vecVoxelTotal[v])
-				{
-					nErrorCnt++;
-				}
-			}
-			CString strTempT = L"";
-			if(nErrorCnt > 0)
-			{
-				strTempT.Format(L"Error Cnt : %d\n", nErrorCnt);
-			}
-			else
-			{
-				strTempT.Format(L"GOOD");
-			}
-
-			ShowTraceTime(strTempT);
-
-			ShowTraceTime(L"\n", 2);
+// 			ShowTraceTime(L"GPU-GPU");
+// 			ShowTraceTime(L"Start Inner Voxel");
+// 
+// 			SetGpuData();
+// 
+// 
+// 			int nSizeT = g_vecVoxelState.size();
+// 			memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);
+// 			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
+// 			copy(g_vecVoxelState.begin(), g_vecVoxelState.begin() + nSizeT, m_bDataTmp[dfVOXEL_IDX]);
+// 			ShowTraceTime(L"External Voxel CPU->GPU COPY" , 1);
+// 
+// 			ShowTraceTime(L"Start Inner Voxel -> Version 1");
+// 
+// 			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
+// 			m_GPUSolid.CUDA_SolidVoxelizationXYZ(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
+// 			std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
+// 
+// 			ShowTraceTime(L"End Inner Voxel -> Version 1" , 1);
+// 
+// 
+// 			Sleep(500);
+// 
+// 			ShowTraceTime(L"Start Inner Voxel -> Version 2");
+// 
+// 			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
+// 			m_GPUSolid.CUDA_SolidVoxelizationXYZBlock(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
+// 			std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
+// 
+// 			ShowTraceTime(L"End Inner Voxel -> Version 2" , 1);
+// 			
+// 			int nErrorCnt = 0;
+// 			for (int v = 0; v < g_vecVoxelTotalCuda.size(); v++)
+// 			{
+// 				if(g_vecVoxelTotalCudaTemp[v] != g_vecVoxelTotalCuda[v])
+// 				{
+// 					nErrorCnt++;
+// 				}
+// 			}
+// 			CString strTempT = L"";
+// 			if(nErrorCnt > 0)
+// 			{
+// 				strTempT.Format(L"Error Cnt : %d\n", nErrorCnt);
+// 			}
+// 			else
+// 			{
+// 				strTempT.Format(L"GOOD");
+// 			}
+// 
+// 			ShowTraceTime(strTempT);
+// 
+// 			ShowTraceTime(L"\n", 2);
 
 		}
 
@@ -5740,7 +5702,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	vector<CString> vecDeleParticle;
 	vecDeleParticle.clear();
 	//! 변경되는 내부 공극 복셀 데이터
-	vector<ST_PARTICLE_POS> vecPorosity;
+	vector<CString> vecPorosity;
 	vecPorosity.clear();
 	map<int,int>::iterator iterStoneCnt;
 	map<int,int>::iterator iterStoneLayerCnt;
@@ -5749,6 +5711,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	
 	CString strKey = L"";
 	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmp;
+	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmpT;
 	//map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmpInner;
 // 	for (int i = 0; i < g_MapOutsideData.size(); i++)
 // 	{
@@ -5777,20 +5740,134 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 // 		}
 
 		iterOutsideDataTmp->second = pstPrarticlePos[i];
-		//printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
-		if(iterOutsideDataTmp->second.fPorosity >= iterOutsideDataTmp->second.fGranularDisintegration)
+
+		if(iterOutsideDataTmp->second.sStoneType == 0) //! 공극
+		{
+			if(iterOutsideDataTmp->second.fHaveWater > 1.0)
+			{
+				
+				int x = iterOutsideDataTmp->second.x;
+				int y = iterOutsideDataTmp->second.y;
+				int z = iterOutsideDataTmp->second.z;
+
+				map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmpInner;
+				vector<ST_PARTICLE_POS> vecPorosityTemp;
+				vecPorosityTemp.clear();
+
+				float fTotalHaveWater = 0.0;
+				for(int nEx = 0 ; nEx < 6 ; nEx++)	// 외부 노출 단면 개수만큼 계산
+				{
+					int nX = x;
+					int nY = y;
+					int nZ = z;
+
+					switch(nEx)	//[0:상,1:하,2:좌,3:우,4:앞,5:뒤]
+					{
+					case 0:
+						nZ += 1;
+						break;
+					case 1:
+						nZ -= 1;
+						break;
+					case 2:
+						nY += 1;
+						break;
+					case 3:
+						nY -= 1;
+						break;
+					case 4:
+						nX -= 1;
+						break;
+					case 5:
+						nX += 1;
+						break;
+					default:
+						break;
+					}
+
+					if(x != nX || y != nY || z != nZ) //! 기존 위치와 다른게 있는것만
+					{
+						strKey.Format(L"%d-%d-%d",nX,nY,nZ);
+
+
+						iterOutsideDataTmpInner = g_MapOutsideData.find(strKey);
+						if(iterOutsideDataTmpInner != g_MapOutsideData.end())
+						{
+							//! 주위 입자 타입이 공극이면 무시해준다.
+							if(iterOutsideDataTmpInner->second.sStoneType == 0)
+							{
+								//! 공극 수분율을 합쳐주기 위해서 밑에서 무시해준다.
+								if(iterOutsideDataTmpInner->second.fHaveWater < 0)
+									iterOutsideDataTmpInner->second.fHaveWater = 0;
+								fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
+								//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
+								vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
+
+								continue;
+							}
+
+							//! 공극률 추가는 CUDA에서 해줫으니까 비교만 해주면됨!!
+							//iterOutsideDataTmpInner->second.fPorosity += (fCalcWaterChange / 5.0);
+
+							if(iterOutsideDataTmpInner->second.fPorosity >= iterOutsideDataTmpInner->second.fGranularDisintegration) // 입상붕괴 도달값에 도달하여 제거
+							{
+								if(iterOutsideDataTmpInner->second.fHaveWater < 0)
+									iterOutsideDataTmpInner->second.fHaveWater = 0;
+								fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
+								//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
+								vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
+							}
+
+						}
+
+					}
+
+				}
+
+				//////////////////////////////////////////////////////////////////////////
+				//! 여기서 입자 -> 공극으로 바뀐 항목에 수분 포화도를 n으로 나누어 넣어준다.
+				int nChangePorosity = vecPorosityTemp.size();
+				for (int nT = 0; nT < nChangePorosity; nT++)
+				{
+					strKey.Format(L"%d-%d-%d", vecPorosityTemp[nT].x, vecPorosityTemp[nT].y, vecPorosityTemp[nT].z);
+					iterOutsideDataTmpT = g_MapOutsideData.find(strKey);
+					if(iterOutsideDataTmpT != g_MapOutsideData.end())
+					{
+						//! 주위 공극과 수분율이 합쳐진다.
+						iterOutsideDataTmpT->second.fHaveWater = (fTotalHaveWater + iterOutsideDataTmp->second.fHaveWater) / (float)(nChangePorosity + 1);
+
+						//! 주위 입자 타입이 공극이면 수분율만 합치고 무시해준다.
+						if(iterOutsideDataTmpT->second.sStoneType == 0)
+							continue;
+
+						vecPorosity.push_back(strKey);
+					}
+
+				}
+			}
+
+		}
+		else
 		{
 			strKey.Format(L"%d-%d-%d",iterOutsideDataTmp->second.x,iterOutsideDataTmp->second.y,iterOutsideDataTmp->second.z);
-							
-// 			if(iterOutsideDataTmp->second.sStoneType > 0.0)
-// 			{
-// 				vecPorosity.push_back(iterOutsideDataTmp->second);
-// 			}
-// 			else
-// 			{
-				vecDeleParticle.push_back(strKey);
-//			}
+			if(iterOutsideDataTmp->second.fHaveWater < 0) //! 일단 내부 처리되는걸로 처리되면 수분함수률을 높여서 구분한다.
+			{
+				//printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
+				if(iterOutsideDataTmp->second.fPorosity >= iterOutsideDataTmp->second.fGranularDisintegration)
+				{
+					vecDeleParticle.push_back(strKey);
+				}
+			}
+			else
+			{
+				TRACE("WATER!!%s\n",strKey);
+				//! 공극이 아닌데 수분율이 있는건 말도안됨!! 임시로 공극데미지 계산을 위한거니 다시 -1로 초기화!
+				//! 약간 억지성이 있는데 맞기는함... 여기서 한번 무시하고 내부처리에서 공극으로 변경될지 처리됨!
+				iterOutsideDataTmp->second.fHaveWater = -1.0;
+			}
 		}
+
+		
 		
 		i++;
 	}
@@ -5889,12 +5966,14 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	//! 내부 입자 -> 공극 변환 처리(위에서 전부 계산 이후 처리 해야 중복 수행 방지됨)
 	for (int v = 0; v < vecPorosity.size(); v++)
 	{
-		strKey.Format(L"%d-%d-%d", vecPorosity[v].x, vecPorosity[v].y, vecPorosity[v].z);
+
+		strKey = vecPorosity[v];
 
 
 		iterOutsideDataTmp = g_MapOutsideData.find(strKey);
 		if(iterOutsideDataTmp != g_MapOutsideData.end())
 		{
+
 			//! 변경 전 개수 빼기
 			iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
 			iterStoneCnt->second--;
@@ -5904,7 +5983,9 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 			//! 변경 후 개수 추가
 			iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
 			iterStoneCnt->second++;
-		}
+		}		
+
+
 	}
 
 

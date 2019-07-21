@@ -64,12 +64,7 @@ extern	vector<bool>											g_vecVoxelYState;
 extern	vector<bool>											g_vecVoxelZState;
 extern	vector<bool>											g_vecVoxelTotal;
 
-extern	vector<bool>											g_vecVoxelXStateCuda;
-extern	vector<bool>											g_vecVoxelYStateCuda;
-extern	vector<bool>											g_vecVoxelZStateCuda;
 extern	vector<bool>											g_vecVoxelTotalCuda;
-
-extern	vector<bool>											g_vecVoxelTotalCudaTemp;
 
 
 

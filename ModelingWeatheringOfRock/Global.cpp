@@ -34,13 +34,8 @@ vector<bool>											g_vecVoxelYState;
 vector<bool>											g_vecVoxelZState;
 vector<bool>											g_vecVoxelTotal;
 
-vector<bool>											g_vecVoxelXStateCuda;
-vector<bool>											g_vecVoxelYStateCuda;
-vector<bool>											g_vecVoxelZStateCuda;
 vector<bool>											g_vecVoxelTotalCuda;
 
-
-vector<bool>											g_vecVoxelTotalCudaTemp;
 
 
 vector<ST_VOXEL_FILE_POS>								g_vecNumData;

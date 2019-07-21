@@ -477,11 +477,14 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 			if(fHaveWaterTemp < 0.0)
 				fHaveWaterTemp = 0.0;
 
+							//! 마스킹용 수분
+			astParticle_pos_unitProcess[threadIdx.x].fHaveWater += fHaveWaterTemp;
+
+
+
 			//fPorosity = 0.0;
 			//__syncthreads();
 
-			//! 마스킹용
-			astParticle_pos_unitProcess[threadIdx.x].fHaveWater += fHaveWaterTemp;
 
 			//printf( "Inner : %d -> Water:%f\n", tid, astParticle_pos_unitProcess[threadIdx.x].fHaveWater);
 
@@ -496,17 +499,25 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 			//3. if(수분 포화도 * 수분 팽창률 > 1.0)
 			if(((pstPrarticlePosCuda[tid].fHaveWater + fHaveWaterTemp) * fCalcWaterChange) > 1.0)
 			{
+				
+				//[20190719] kjky12 일단 내부 처리되는걸로 처리되면 수분함수률을 높여서 구분한다. -> 그러고 다시 -1로 변경해줘야할듯	
 				//! 상
+				astParticle_pos_unitProcess[threadIdx.x + 1].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 1].fPorosity += (fCalcWaterChange / 5.0);
 				//! 하
+				astParticle_pos_unitProcess[threadIdx.x + 2].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 2].fPorosity += (fCalcWaterChange / 5.0);
 				//! 좌
+				astParticle_pos_unitProcess[threadIdx.x + 3].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 3].fPorosity += (fCalcWaterChange / 5.0);
 				//! 우
+				astParticle_pos_unitProcess[threadIdx.x + 4].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 4].fPorosity += (fCalcWaterChange / 5.0);
 				//! 앞
+				astParticle_pos_unitProcess[threadIdx.x + 5].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 5].fPorosity += (fCalcWaterChange / 5.0);
 				//! 뒤
+				astParticle_pos_unitProcess[threadIdx.x + 6].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 6].fPorosity += (fCalcWaterChange / 5.0);
 
 			}
