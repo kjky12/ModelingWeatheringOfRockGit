@@ -444,8 +444,6 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	//memset(astParticle_pos_unitProcess, NULL, sizeof(ST_PARTICLE_POS_UNIT_PROCESS) * lcm(nThreadCnt, 6));
 	__syncthreads();
 
-	//ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
-
 
 	//printf( "IN_OUT : %d\n", pstPrarticlePosCuda[tid].bInOut);
 	if(pstPrarticlePosCuda[tid].bInOut == true) //! 외부는 기존 입상붕괴
@@ -525,29 +523,66 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 		}
 	}
 
+/*	ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
+	return;*/
 
+	int nIdx = tid;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x].fPorosity;
+		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x].fHaveWater;
+	}
 
-	pstPrarticlePosCudaMask[tid].fPorosity += astParticle_pos_unitProcess[threadIdx.x].fPorosity;
-	pstPrarticlePosCudaMask[tid].fHaveWater += astParticle_pos_unitProcess[threadIdx.x].fHaveWater;
+	nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 1].fPorosity;
+		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 1].fHaveWater;
+	}
 	
-	pstPrarticlePosCudaMask[tid + (nXFileVoxCnt * nYFileVoxCnt)].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 1].fPorosity;
-	pstPrarticlePosCudaMask[tid + (nXFileVoxCnt * nYFileVoxCnt)].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 1].fHaveWater;
 
-	pstPrarticlePosCudaMask[tid - (nXFileVoxCnt * nYFileVoxCnt)].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 2].fPorosity;
-	pstPrarticlePosCudaMask[tid - (nXFileVoxCnt * nYFileVoxCnt)].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 2].fHaveWater;
-
-	pstPrarticlePosCudaMask[tid + nXFileVoxCnt].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 3].fPorosity;
-	pstPrarticlePosCudaMask[tid + nXFileVoxCnt].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 3].fHaveWater;
-
-	pstPrarticlePosCudaMask[tid - nXFileVoxCnt].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 4].fPorosity;
-	pstPrarticlePosCudaMask[tid - nXFileVoxCnt].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 4].fHaveWater;
-
-	pstPrarticlePosCudaMask[tid - 1].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 5].fPorosity;
-	pstPrarticlePosCudaMask[tid - 1].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 5].fHaveWater;
-
-	pstPrarticlePosCudaMask[tid + 1].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 6].fPorosity;
-	pstPrarticlePosCudaMask[tid + 1].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 6].fHaveWater;
+	nIdx = tid - (nXFileVoxCnt * nYFileVoxCnt);
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 2].fPorosity;
+		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 2].fHaveWater;
+	}
 	
+
+	nIdx = tid + nXFileVoxCnt;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 3].fPorosity;
+		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 3].fHaveWater;
+
+	}
+
+
+	nIdx = tid - nXFileVoxCnt;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 4].fPorosity;
+		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 4].fHaveWater;
+
+	}
+	
+
+	nIdx = tid - 1;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 5].fPorosity;
+		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 5].fHaveWater;
+
+	}
+	
+
+	nIdx = tid + 1;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 6].fPorosity;
+		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 6].fHaveWater;
+	}
+
 	//ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
 
 } 
@@ -613,7 +648,10 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	
 	
 	// cudaMemcpy(destination, source, number of byte, cudaMemcpyHostToDevice)로 호스트에서 디바이스로 메모리를 카피한다.
-	cudaMemcpy(pstPrarticlePosCuda, pstPrarticlePos, nSizeCnt*nPrarticlePosCnt, cudaMemcpyHostToDevice);
+	if ( cudaSuccess != cudaMemcpy(pstPrarticlePosCuda, pstPrarticlePos, nSizeCnt*nPrarticlePosCnt, cudaMemcpyHostToDevice))
+	{
+		printf( "Error! Copy1 \n" );
+	}
 	//cudaMemcpy(pnPrarticlePosCntCuda, &nPrarticlePosCnt, sizeof(int), cudaMemcpyHostToDevice);
 
 
@@ -628,17 +666,24 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	//int nSharedMemoryCnt = lcm(nThreadCnt, 6); //92
 	int nBlockCnt = (nPrarticlePosCnt / nThreadCnt) + 1;
 	//kernelCalcRocking<<<nBlockCnt, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
-	int nBlockStep = 128 * 2;
+	int nBlockStep = 256;
 	for(int n = 0; n < nBlockCnt; n += nBlockStep)
 	{
 		int nBlockStepTemp = nBlockStep;	
 		if(nBlockCnt - n < nBlockStep)
 			nBlockStepTemp = nBlockCnt - n;
-		kernelCalcRocking<<<nBlockStep, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);		
+		kernelCalcRocking<<<nBlockStepTemp, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);		
 	}
-	//kernelCalcRocking<<<4, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
 	
-	kernelCalcRockingMasking<<<nBlockCnt, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask);
+	//nBlockStep = 256;
+	for(int n = 0; n < nBlockCnt; n += nBlockStep)
+	{
+		int nBlockStepTemp = nBlockStep;	
+		if(nBlockCnt - n < nBlockStep)
+			nBlockStepTemp = nBlockCnt - n;
+		
+		kernelCalcRockingMasking<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask);
+	}
 	
 	//cudaDeviceSynchronize();
 
@@ -648,12 +693,14 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 
 	printf("TEST\n");
 	
+	memset(pstPrarticlePos, NULL, nSizeCnt*nPrarticlePosCnt);
+
 	if ( cudaSuccess != cudaMemcpy(pstPrarticlePos, pstPrarticlePosCuda, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost))
 	{
-		printf( "Error! Copy \n" );
+		printf( "Error! Copy2 \n" );
 	}
 
-	cudaDeviceSynchronize();
+	//cudaDeviceSynchronize();
 
 	cudaFree(pstPrarticlePosCuda);
 	cudaFree(pstPrarticlePosCudaMask);
