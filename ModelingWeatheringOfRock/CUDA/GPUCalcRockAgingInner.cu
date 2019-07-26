@@ -691,7 +691,11 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	//cudaStreamSynchronize(cudaStream);
 
 
-	printf("TEST\n");
+	//for(int n = 0; n < nPrarticlePosCnt; n++)
+	//{
+	//	printf("Acess idx : %d -> Porosity:%f,%f\n", n, pstPrarticlePosCudaMask[n].fPorosity, pstPrarticlePosCudaMask[n].fHaveWater);
+	//}
+	//printf("TEST\n");
 	
 	memset(pstPrarticlePos, NULL, nSizeCnt*nPrarticlePosCnt);
 
