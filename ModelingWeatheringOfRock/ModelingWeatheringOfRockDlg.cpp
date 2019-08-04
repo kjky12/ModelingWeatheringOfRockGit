@@ -5668,21 +5668,68 @@ struct extract_second
 
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 {
+	ST_PARTICLE_POS_CUDA	*pstPrarticlePos = NULL;
+	ST_PARTICLE_POS_CUDA	*pstPrarticlePosMask = NULL;
+	pstPrarticlePos = new ST_PARTICLE_POS_CUDA[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
+	pstPrarticlePosMask = new ST_PARTICLE_POS_CUDA[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
+	memset(pstPrarticlePos, NULL, sizeof(ST_PARTICLE_POS_CUDA) * m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+	memset(pstPrarticlePosMask, NULL, sizeof(ST_PARTICLE_POS_CUDA) * m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+
+
+	//std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
+
+
+	for (int a = 0; a < m_nXFileVoxCnt; a++)
+	{
+		for (int b = 0; b < m_nYFileVoxCnt; b++)
+		{
+			for (int c = 0; c < m_nZFileVoxCnt; c++)
+			{
+				
+
+				CString strKey = L"";
+				strKey.Format(L"%d-%d-%d",a,b,c);
+
+				map<CString,ST_PARTICLE_POS>::iterator iterOutsideData;	
+				iterOutsideData = g_MapOutsideData.find(strKey);
+				if(iterOutsideData != g_MapOutsideData.end())
+				{
+					pstPrarticlePos[a*b*c].fPorosity = iterOutsideData->second.fPorosity;
+
+					pstPrarticlePos[a*b*c].abExternalSide[0] = iterOutsideData->second.abExternalSide[0];
+					pstPrarticlePos[a*b*c].abExternalSide[1] = iterOutsideData->second.abExternalSide[1];
+					pstPrarticlePos[a*b*c].abExternalSide[2] = iterOutsideData->second.abExternalSide[2];
+					pstPrarticlePos[a*b*c].abExternalSide[3] = iterOutsideData->second.abExternalSide[3];
+					pstPrarticlePos[a*b*c].abExternalSide[4] = iterOutsideData->second.abExternalSide[4];
+					pstPrarticlePos[a*b*c].abExternalSide[5] = iterOutsideData->second.abExternalSide[5];
+
+					pstPrarticlePos[a*b*c].fGranularDisintegration = iterOutsideData->second.fGranularDisintegration;
+					pstPrarticlePos[a*b*c].fHaveWater = iterOutsideData->second.fHaveWater;
+					pstPrarticlePos[a*b*c].sStoneType = iterOutsideData->second.sStoneType;
+					pstPrarticlePos[a*b*c].bInOut = iterOutsideData->second.bInOut;
+					pstPrarticlePos[a*b*c].sLayerIdx = iterOutsideData->second.sLayerIdx;
+				}
+				else
+				{
+					//! 없는부분!!
+					ST_PARTICLE_POS_CUDA	st_particle_pos;
+					memset(&st_particle_pos, NULL, sizeof(ST_PARTICLE_POS_CUDA));
+					st_particle_pos.sStoneType = -1;
+
+					pstPrarticlePos[a*b*c] = st_particle_pos;
+				}
+
+			}
+		}
+	}
+
 	m_nCalcTryCnt++;
 	
-	ST_PARTICLE_POS	*pstPrarticlePos = NULL;
-	ST_PARTICLE_POS	*pstPrarticlePosMask = NULL;
-	pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
-	pstPrarticlePosMask = new ST_PARTICLE_POS[g_MapOutsideData.size()];
-	memset(pstPrarticlePosMask, NULL, sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size());
-
-
-	std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
 
 	//SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
 	ShowTraceTime(L"GPU - Calc Rocking Start");
 
-	m_GPUCalcRockAgingInner.SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
+	m_GPUCalcRockAgingInner.SetInnderVoxelData(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt, pstPrarticlePos, pstPrarticlePosMask);
 	
 	//std::copy(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin());
 	ShowTraceTime(L"GPU - Calc Rocking End", 1);
@@ -5693,340 +5740,322 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 // 	ShowTraceTime(L"GPU - Calc Rocking Endi" , 1);
 // 
 // 	ShowTraceTime(L"GPU - Sync Start");
-	ShowTraceTime(L"GPU - Else Start" , 1);
+//	ShowTraceTime(L"GPU - Else Start" , 1);
 
 	//! 외부에 공극이 있는경우 연결되있는 공극을 전부 없애기 위해..
-	vector<CString> vecDeleParticleInsideCheck;
-	vecDeleParticleInsideCheck.clear();
-	//! 삭제되는 외부 복셀 데이터
-	vector<CString> vecDeleParticle;
-	vecDeleParticle.clear();
-	//! 변경되는 내부 공극 복셀 데이터
-	vector<CString> vecPorosity;
-	vecPorosity.clear();
-	map<int,int>::iterator iterStoneCnt;
-	map<int,int>::iterator iterStoneLayerCnt;
-	CString strTmp;
-
-	
-	CString strKey = L"";
-	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmp;
-	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmpT;
-	//map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmpInner;
-// 	for (int i = 0; i < g_MapOutsideData.size(); i++)
-// 	{
+// 	vector<CString> vecDeleParticleInsideCheck;
+// 	vecDeleParticleInsideCheck.clear();
+// 	//! 삭제되는 외부 복셀 데이터
+// 	vector<CString> vecDeleParticle;
+// 	vecDeleParticle.clear();
+// 	//! 변경되는 내부 공극 복셀 데이터
+// 	vector<CString> vecPorosity;
+// 	vecPorosity.clear();
+// 	map<int,int>::iterator iterStoneCnt;
+// 	map<int,int>::iterator iterStoneLayerCnt;
+// 	CString strTmp;
 // 
-// 		if(iterOutsideDataTmp->second.fPorosity >= iterOutsideDataTmp->second.fGranularDisintegration)
+// 	
+// 	CString strKey = L"";
+// 	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmp;
+// 	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmpT;
+// 
+// 	int i = 0;
+// 	for(iterOutsideDataTmp = g_MapOutsideData.begin(); iterOutsideDataTmp != g_MapOutsideData.end(); iterOutsideDataTmp++)
+// 	{
+// // 		if(iterOutsideDataTmp->second.fPorosity != pstPrarticlePos[i].fPorosity)
+// // 		{
+// // 			int a = 0;
+// // 		}
+// 
+// 		iterOutsideDataTmp->second = pstPrarticlePos[i];
+// 
+// 		if(iterOutsideDataTmp->second.sStoneType == 0) //! 공극
+// 		{
+// 			if(iterOutsideDataTmp->second.fHaveWater > 1.0)
+// 			{
+// 				
+// 				int x = iterOutsideDataTmp->second.x;
+// 				int y = iterOutsideDataTmp->second.y;
+// 				int z = iterOutsideDataTmp->second.z;
+// 
+// 				map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmpInner;
+// 				vector<ST_PARTICLE_POS> vecPorosityTemp;
+// 				vecPorosityTemp.clear();
+// 
+// 				float fTotalHaveWater = 0.0;
+// 				for(int nEx = 0 ; nEx < 6 ; nEx++)	// 외부 노출 단면 개수만큼 계산
+// 				{
+// 					int nX = x;
+// 					int nY = y;
+// 					int nZ = z;
+// 
+// 					switch(nEx)	//[0:상,1:하,2:좌,3:우,4:앞,5:뒤]
+// 					{
+// 					case 0:
+// 						nZ += 1;
+// 						break;
+// 					case 1:
+// 						nZ -= 1;
+// 						break;
+// 					case 2:
+// 						nY += 1;
+// 						break;
+// 					case 3:
+// 						nY -= 1;
+// 						break;
+// 					case 4:
+// 						nX -= 1;
+// 						break;
+// 					case 5:
+// 						nX += 1;
+// 						break;
+// 					default:
+// 						break;
+// 					}
+// 
+// 					if(x != nX || y != nY || z != nZ) //! 기존 위치와 다른게 있는것만
+// 					{
+// 						strKey.Format(L"%d-%d-%d",nX,nY,nZ);
+// 
+// 
+// 						iterOutsideDataTmpInner = g_MapOutsideData.find(strKey);
+// 						if(iterOutsideDataTmpInner != g_MapOutsideData.end())
+// 						{
+// 							//! 주위 입자 타입이 공극이면 무시해준다.
+// 							if(iterOutsideDataTmpInner->second.sStoneType == 0)
+// 							{
+// 								//! 공극 수분율을 합쳐주기 위해서 밑에서 무시해준다.
+// 								if(iterOutsideDataTmpInner->second.fHaveWater < 0)
+// 									iterOutsideDataTmpInner->second.fHaveWater = 0;
+// 								fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
+// 								//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
+// 								vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
+// 
+// 								continue;
+// 							}
+// 
+// 							//! 공극률 추가는 CUDA에서 해줫으니까 비교만 해주면됨!!
+// 							//iterOutsideDataTmpInner->second.fPorosity += (fCalcWaterChange / 5.0);
+// 
+// 							if(iterOutsideDataTmpInner->second.fPorosity >= iterOutsideDataTmpInner->second.fGranularDisintegration) // 입상붕괴 도달값에 도달하여 제거
+// 							{
+// 								if(iterOutsideDataTmpInner->second.fHaveWater < 0)
+// 									iterOutsideDataTmpInner->second.fHaveWater = 0;
+// 								fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
+// 								//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
+// 								vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
+// 							}
+// 
+// 						}
+// 
+// 					}
+// 
+// 				}
+// 
+// 				//////////////////////////////////////////////////////////////////////////
+// 				//! 여기서 입자 -> 공극으로 바뀐 항목에 수분 포화도를 n으로 나누어 넣어준다.
+// 				int nChangePorosity = vecPorosityTemp.size();
+// 				for (int nT = 0; nT < nChangePorosity; nT++)
+// 				{
+// 					strKey.Format(L"%d-%d-%d", vecPorosityTemp[nT].x, vecPorosityTemp[nT].y, vecPorosityTemp[nT].z);
+// 					iterOutsideDataTmpT = g_MapOutsideData.find(strKey);
+// 					if(iterOutsideDataTmpT != g_MapOutsideData.end())
+// 					{
+// 						//! 주위 공극과 수분율이 합쳐진다.
+// 						iterOutsideDataTmpT->second.fHaveWater = (fTotalHaveWater + iterOutsideDataTmp->second.fHaveWater) / (float)(nChangePorosity + 1);
+// 
+// 						//! 주위 입자 타입이 공극이면 수분율만 합치고 무시해준다.
+// 						if(iterOutsideDataTmpT->second.sStoneType == 0)
+// 							continue;
+// 
+// 						vecPorosity.push_back(strKey);
+// 					}
+// 
+// 				}
+// 			}
+// 
+// 		}
+// 		else
 // 		{
 // 			strKey.Format(L"%d-%d-%d",iterOutsideDataTmp->second.x,iterOutsideDataTmp->second.y,iterOutsideDataTmp->second.z);
-// 
-// 			if(iterOutsideDataTmp->second.fHaveWater > 0.0)
+// 			if(iterOutsideDataTmp->second.fHaveWater < 0) //! 일단 내부 처리되는걸로 처리되면 수분함수률을 높여서 구분한다.
 // 			{
-// 				vecPorosity.push_back(iterOutsideDataTmp->second);
+// 				//printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
+// 				if(iterOutsideDataTmp->second.fPorosity >= iterOutsideDataTmp->second.fGranularDisintegration)
+// 				{
+// 					vecDeleParticle.push_back(strKey);
+// 				}
 // 			}
 // 			else
 // 			{
-// 				vecDeleParticle.push_back(strKey);
+// 				TRACE("WATER!!%s\n",strKey);
+// 				//! 공극이 아닌데 수분율이 있는건 말도안됨!! 임시로 공극데미지 계산을 위한거니 다시 -1로 초기화!
+// 				//! 약간 억지성이 있는데 맞기는함... 여기서 한번 무시하고 내부처리에서 공극으로 변경될지 처리됨!
+// 				iterOutsideDataTmp->second.fHaveWater = -1.0;
 // 			}
 // 		}
+// 
+// 		
+// 		
+// 		i++;
 // 	}
-
-	int i = 0;
-	for(iterOutsideDataTmp = g_MapOutsideData.begin(); iterOutsideDataTmp != g_MapOutsideData.end(); iterOutsideDataTmp++)
-	{
-// 		if(iterOutsideDataTmp->second.fPorosity != pstPrarticlePos[i].fPorosity)
+// 	//iterOutsideDataTmp->second.fPorosity;
+// 
+// 
+// // 	ShowTraceTime(L"GPU - Sync Endi" , 1);
+// // 
+// // 	ShowTraceTime(L"GPU - Delete Start");
+// 
+// 	vector<ST_DELETE_VOXEL_POS> deleteVoxelPos;
+// 
+// 	ST_DELETE_VOXEL_POS stDeleteVoxelPos;
+// 	set<CString>::iterator	iterDeleteParticle;
+// 	//////////////////////////////////////////////////////////////////////////
+// 	//! 외부에 입상 붕괴 처리
+// 	deleteVoxelPos.clear();
+// 	int v = 0 ;
+// 	for(v = 0 ; v < vecDeleParticle.size() ; v++)
+// 	{
+// 		bool bDelCheck = false;
+// 		iterDeleteParticle = m_setDeleteParticle.find(vecDeleParticle[v]);
+// 		if(iterDeleteParticle != m_setDeleteParticle.end()) //! 기존에 먼저 삭제 된적 있으면 무시...(이게 앞에서 미리 내부 복셀을 모두 생성하는 경우 처리되느 중복을 없애기위해)
+// 			bDelCheck = true;
+// 
+// 		iterOutsideDataTmp = g_MapOutsideData.find(vecDeleParticle[v]);
+// 		if(iterOutsideDataTmp != g_MapOutsideData.end())
 // 		{
-// 			int a = 0;
+// 			stDeleteVoxelPos.nX = iterOutsideDataTmp->second.x;
+// 			stDeleteVoxelPos.nY = iterOutsideDataTmp->second.y;
+// 			stDeleteVoxelPos.nZ = iterOutsideDataTmp->second.z;
+// 
+// 			iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
+// 			iterStoneCnt->second--;
+// 
+// 			//			DeleteCellToSolidFile(iterOutsideDataTmp->second.x,iterOutsideDataTmp->second.y,iterOutsideDataTmp->second.z);
+// 			g_MapOutsideData.erase(iterOutsideDataTmp);
+// 
+// 			if(!bDelCheck)
+// 				deleteVoxelPos.push_back(stDeleteVoxelPos);
+// 
 // 		}
-
-		iterOutsideDataTmp->second = pstPrarticlePos[i];
-
-		if(iterOutsideDataTmp->second.sStoneType == 0) //! 공극
-		{
-			if(iterOutsideDataTmp->second.fHaveWater > 1.0)
-			{
-				
-				int x = iterOutsideDataTmp->second.x;
-				int y = iterOutsideDataTmp->second.y;
-				int z = iterOutsideDataTmp->second.z;
-
-				map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataTmpInner;
-				vector<ST_PARTICLE_POS> vecPorosityTemp;
-				vecPorosityTemp.clear();
-
-				float fTotalHaveWater = 0.0;
-				for(int nEx = 0 ; nEx < 6 ; nEx++)	// 외부 노출 단면 개수만큼 계산
-				{
-					int nX = x;
-					int nY = y;
-					int nZ = z;
-
-					switch(nEx)	//[0:상,1:하,2:좌,3:우,4:앞,5:뒤]
-					{
-					case 0:
-						nZ += 1;
-						break;
-					case 1:
-						nZ -= 1;
-						break;
-					case 2:
-						nY += 1;
-						break;
-					case 3:
-						nY -= 1;
-						break;
-					case 4:
-						nX -= 1;
-						break;
-					case 5:
-						nX += 1;
-						break;
-					default:
-						break;
-					}
-
-					if(x != nX || y != nY || z != nZ) //! 기존 위치와 다른게 있는것만
-					{
-						strKey.Format(L"%d-%d-%d",nX,nY,nZ);
-
-
-						iterOutsideDataTmpInner = g_MapOutsideData.find(strKey);
-						if(iterOutsideDataTmpInner != g_MapOutsideData.end())
-						{
-							//! 주위 입자 타입이 공극이면 무시해준다.
-							if(iterOutsideDataTmpInner->second.sStoneType == 0)
-							{
-								//! 공극 수분율을 합쳐주기 위해서 밑에서 무시해준다.
-								if(iterOutsideDataTmpInner->second.fHaveWater < 0)
-									iterOutsideDataTmpInner->second.fHaveWater = 0;
-								fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
-								//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
-								vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
-
-								continue;
-							}
-
-							//! 공극률 추가는 CUDA에서 해줫으니까 비교만 해주면됨!!
-							//iterOutsideDataTmpInner->second.fPorosity += (fCalcWaterChange / 5.0);
-
-							if(iterOutsideDataTmpInner->second.fPorosity >= iterOutsideDataTmpInner->second.fGranularDisintegration) // 입상붕괴 도달값에 도달하여 제거
-							{
-								if(iterOutsideDataTmpInner->second.fHaveWater < 0)
-									iterOutsideDataTmpInner->second.fHaveWater = 0;
-								fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
-								//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
-								vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
-							}
-
-						}
-
-					}
-
-				}
-
-				//////////////////////////////////////////////////////////////////////////
-				//! 여기서 입자 -> 공극으로 바뀐 항목에 수분 포화도를 n으로 나누어 넣어준다.
-				int nChangePorosity = vecPorosityTemp.size();
-				for (int nT = 0; nT < nChangePorosity; nT++)
-				{
-					strKey.Format(L"%d-%d-%d", vecPorosityTemp[nT].x, vecPorosityTemp[nT].y, vecPorosityTemp[nT].z);
-					iterOutsideDataTmpT = g_MapOutsideData.find(strKey);
-					if(iterOutsideDataTmpT != g_MapOutsideData.end())
-					{
-						//! 주위 공극과 수분율이 합쳐진다.
-						iterOutsideDataTmpT->second.fHaveWater = (fTotalHaveWater + iterOutsideDataTmp->second.fHaveWater) / (float)(nChangePorosity + 1);
-
-						//! 주위 입자 타입이 공극이면 수분율만 합치고 무시해준다.
-						if(iterOutsideDataTmpT->second.sStoneType == 0)
-							continue;
-
-						vecPorosity.push_back(strKey);
-					}
-
-				}
-			}
-
-		}
-		else
-		{
-			strKey.Format(L"%d-%d-%d",iterOutsideDataTmp->second.x,iterOutsideDataTmp->second.y,iterOutsideDataTmp->second.z);
-			if(iterOutsideDataTmp->second.fHaveWater < 0) //! 일단 내부 처리되는걸로 처리되면 수분함수률을 높여서 구분한다.
-			{
-				//printf("%03d->Water:%f\Porosity:%f\n", i, pstPrarticlePosMask[i].fHaveWater, pstPrarticlePosMask[i].fPorosity);
-				if(iterOutsideDataTmp->second.fPorosity >= iterOutsideDataTmp->second.fGranularDisintegration)
-				{
-					vecDeleParticle.push_back(strKey);
-				}
-			}
-			else
-			{
-				TRACE("WATER!!%s\n",strKey);
-				//! 공극이 아닌데 수분율이 있는건 말도안됨!! 임시로 공극데미지 계산을 위한거니 다시 -1로 초기화!
-				//! 약간 억지성이 있는데 맞기는함... 여기서 한번 무시하고 내부처리에서 공극으로 변경될지 처리됨!
-				iterOutsideDataTmp->second.fHaveWater = -1.0;
-			}
-		}
-
-		
-		
-		i++;
-	}
-	//iterOutsideDataTmp->second.fPorosity;
-
-
-// 	ShowTraceTime(L"GPU - Sync Endi" , 1);
 // 
-// 	ShowTraceTime(L"GPU - Delete Start");
-
-	vector<ST_DELETE_VOXEL_POS> deleteVoxelPos;
-
-	ST_DELETE_VOXEL_POS stDeleteVoxelPos;
-	set<CString>::iterator	iterDeleteParticle;
-	//////////////////////////////////////////////////////////////////////////
-	//! 외부에 입상 붕괴 처리
-	deleteVoxelPos.clear();
-	int v = 0 ;
-	for(v = 0 ; v < vecDeleParticle.size() ; v++)
-	{
-		bool bDelCheck = false;
-		iterDeleteParticle = m_setDeleteParticle.find(vecDeleParticle[v]);
-		if(iterDeleteParticle != m_setDeleteParticle.end()) //! 기존에 먼저 삭제 된적 있으면 무시...(이게 앞에서 미리 내부 복셀을 모두 생성하는 경우 처리되느 중복을 없애기위해)
-			bDelCheck = true;
-
-		iterOutsideDataTmp = g_MapOutsideData.find(vecDeleParticle[v]);
-		if(iterOutsideDataTmp != g_MapOutsideData.end())
-		{
-			stDeleteVoxelPos.nX = iterOutsideDataTmp->second.x;
-			stDeleteVoxelPos.nY = iterOutsideDataTmp->second.y;
-			stDeleteVoxelPos.nZ = iterOutsideDataTmp->second.z;
-
-			iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
-			iterStoneCnt->second--;
-
-			//			DeleteCellToSolidFile(iterOutsideDataTmp->second.x,iterOutsideDataTmp->second.y,iterOutsideDataTmp->second.z);
-			g_MapOutsideData.erase(iterOutsideDataTmp);
-
-			if(!bDelCheck)
-				deleteVoxelPos.push_back(stDeleteVoxelPos);
-
-		}
-
-		//strKey.Format(L"%d-%d-%d",x,y,z);
-		//! 내부 복셀을 미리 생성하는 경우 모든 복셀이 들어 있다.
-		if(!bDelCheck)
-			m_setDeleteParticle.insert(vecDeleParticle[v]);
-	}
-	
-	//////////////////////////////////////////////////////////////////////////
-	//! 외부와 연결되있는공극을 확인하고 공극을 삭제해준다.
-	set<CString>::iterator iterTemp;
-	set<CString> setTemp;
-	for(v = 0 ; v < vecDeleParticleInsideCheck.size() ; v++)
-	{
-		setTemp.clear();
-		setTemp =  CalcDeleteParticleInside(vecDeleParticleInsideCheck[v]);
-
-		for (iterTemp = setTemp.begin(); iterTemp != setTemp.end(); iterTemp++)
-		{
-			bool bDelCheck = false;
-			iterDeleteParticle = m_setDeleteParticle.find(vecDeleParticleInsideCheck[v]);
-			if(iterDeleteParticle != m_setDeleteParticle.end()) //! 기존에 먼저 삭제 된적 있으면 무시...(이게 앞에서 미리 내부 복셀을 모두 생성하는 경우 처리되느 중복을 없애기위해)
-				bDelCheck = true;
-
-			iterOutsideDataTmp = g_MapOutsideData.find(*iterTemp);
-			if(iterOutsideDataTmp != g_MapOutsideData.end())
-			{
-				stDeleteVoxelPos.nX = iterOutsideDataTmp->second.x;
-				stDeleteVoxelPos.nY = iterOutsideDataTmp->second.y;
-				stDeleteVoxelPos.nZ = iterOutsideDataTmp->second.z;
-
-				iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
-				iterStoneCnt->second--;
-
-				//			DeleteCellToSolidFile(iterOutsideDataTmp->second.x,iterOutsideDataTmp->second.y,iterOutsideDataTmp->second.z);
-				g_MapOutsideData.erase(iterOutsideDataTmp);
-
-				if(!bDelCheck)
-					deleteVoxelPos.push_back(stDeleteVoxelPos);
-			}
-
-
-			if(!bDelCheck)
-				m_setDeleteParticle.insert(vecDeleParticleInsideCheck[v]);
-
-		}
-		
-	}
-	
-// 	ShowTraceTime(L"GPU - Delete Endi" , 1);
+// 		//strKey.Format(L"%d-%d-%d",x,y,z);
+// 		//! 내부 복셀을 미리 생성하는 경우 모든 복셀이 들어 있다.
+// 		if(!bDelCheck)
+// 			m_setDeleteParticle.insert(vecDeleParticle[v]);
+// 	}
+// 	
+// 	//////////////////////////////////////////////////////////////////////////
+// 	//! 외부와 연결되있는공극을 확인하고 공극을 삭제해준다.
+// 	set<CString>::iterator iterTemp;
+// 	set<CString> setTemp;
+// 	for(v = 0 ; v < vecDeleParticleInsideCheck.size() ; v++)
+// 	{
+// 		setTemp.clear();
+// 		setTemp =  CalcDeleteParticleInside(vecDeleParticleInsideCheck[v]);
 // 
-// 	ShowTraceTime(L"GPU - Change Start");
-
-	//////////////////////////////////////////////////////////////////////////
-	//! 내부 입자 -> 공극 변환 처리(위에서 전부 계산 이후 처리 해야 중복 수행 방지됨)
-	for (int v = 0; v < vecPorosity.size(); v++)
-	{
-
-		strKey = vecPorosity[v];
-
-
-		iterOutsideDataTmp = g_MapOutsideData.find(strKey);
-		if(iterOutsideDataTmp != g_MapOutsideData.end())
-		{
-
-			//! 변경 전 개수 빼기
-			iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
-			iterStoneCnt->second--;
-
-			iterOutsideDataTmp->second.sStoneType = 0;
-
-			//! 변경 후 개수 추가
-			iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
-			iterStoneCnt->second++;
-		}		
-
-
-	}
-
-
-// 	ShowTraceTime(L"GPU - Change Endi" , 1);
+// 		for (iterTemp = setTemp.begin(); iterTemp != setTemp.end(); iterTemp++)
+// 		{
+// 			bool bDelCheck = false;
+// 			iterDeleteParticle = m_setDeleteParticle.find(vecDeleParticleInsideCheck[v]);
+// 			if(iterDeleteParticle != m_setDeleteParticle.end()) //! 기존에 먼저 삭제 된적 있으면 무시...(이게 앞에서 미리 내부 복셀을 모두 생성하는 경우 처리되느 중복을 없애기위해)
+// 				bDelCheck = true;
 // 
-// 	ShowTraceTime(L"GPU - Recalc Start");
-
-
-	//  [2/5/2019 kjky12] 전체 복셀을 미리 생성하기 때문에 삭제 및 재계산을 할 필요가 없다.
-	for(int d = 0 ; d < deleteVoxelPos.size() ; d++)
-	{
-		// 입자 제거후 주변 입자의 외부 노출 갯수 재계산
-		ReCalcExternalSide(deleteVoxelPos[d].nX,deleteVoxelPos[d].nY,deleteVoxelPos[d].nZ, g_MapOutsideData);	// 입자 제거후 주변 입자의 외부 노출 갯수 재계산
-	}
-
- 
-	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataDel;
-	for(iterOutsideDataTmp = m_mapInsertParticle.begin() ; iterOutsideDataTmp != m_mapInsertParticle.end() ; iterOutsideDataTmp++)
-	{
-		iterOutsideDataDel = g_MapOutsideData.find(iterOutsideDataTmp->first);
-		if(iterOutsideDataDel != g_MapOutsideData.end())
-		{
-			g_MapOutsideData.erase(iterOutsideDataDel);
-		}
-
-		g_MapOutsideData.insert(make_pair(iterOutsideDataTmp->first,iterOutsideDataTmp->second));
-	}
-
-	ShowTraceTime(L"GPU - Else Endi" , 1);
-
-	vecDeleParticle.clear();
-	m_mapInsertParticle.clear();
-
-	strTmp.Format(L"%d (%.02f%%)",(int)m_setDeleteParticle.size(), (float)((float)m_setDeleteParticle.size()/(float)m_nCalcTotalCnt) * 100.0);
-	m_editGrDisCnt.SetWindowText(strTmp);
-
-	strTmp.Format(L"%d (%.02f%%)",(int)g_MapOutsideData.size(), (float)((float)g_MapOutsideData.size()/(float)m_nCalcTotalCnt) * 100.0);
-	m_editGrTotalCnt.SetWindowText(strTmp);
-
-	strTmp.Format(L"%d",m_nCalcTryCnt);		
-	m_editCalcTryCnt.SetWindowText(strTmp);
+// 			iterOutsideDataTmp = g_MapOutsideData.find(*iterTemp);
+// 			if(iterOutsideDataTmp != g_MapOutsideData.end())
+// 			{
+// 				stDeleteVoxelPos.nX = iterOutsideDataTmp->second.x;
+// 				stDeleteVoxelPos.nY = iterOutsideDataTmp->second.y;
+// 				stDeleteVoxelPos.nZ = iterOutsideDataTmp->second.z;
+// 
+// 				iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
+// 				iterStoneCnt->second--;
+// 
+// 				//			DeleteCellToSolidFile(iterOutsideDataTmp->second.x,iterOutsideDataTmp->second.y,iterOutsideDataTmp->second.z);
+// 				g_MapOutsideData.erase(iterOutsideDataTmp);
+// 
+// 				if(!bDelCheck)
+// 					deleteVoxelPos.push_back(stDeleteVoxelPos);
+// 			}
+// 
+// 
+// 			if(!bDelCheck)
+// 				m_setDeleteParticle.insert(vecDeleParticleInsideCheck[v]);
+// 
+// 		}
+// 		
+// 	}
+// 	
+// // 	ShowTraceTime(L"GPU - Delete Endi" , 1);
+// // 
+// // 	ShowTraceTime(L"GPU - Change Start");
+// 
+// 	//////////////////////////////////////////////////////////////////////////
+// 	//! 내부 입자 -> 공극 변환 처리(위에서 전부 계산 이후 처리 해야 중복 수행 방지됨)
+// 	for (int v = 0; v < vecPorosity.size(); v++)
+// 	{
+// 
+// 		strKey = vecPorosity[v];
+// 
+// 
+// 		iterOutsideDataTmp = g_MapOutsideData.find(strKey);
+// 		if(iterOutsideDataTmp != g_MapOutsideData.end())
+// 		{
+// 
+// 			//! 변경 전 개수 빼기
+// 			iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
+// 			iterStoneCnt->second--;
+// 
+// 			iterOutsideDataTmp->second.sStoneType = 0;
+// 
+// 			//! 변경 후 개수 추가
+// 			iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideDataTmp->second.sStoneType);
+// 			iterStoneCnt->second++;
+// 		}		
+// 
+// 
+// 	}
+// 
+// 
+// // 	ShowTraceTime(L"GPU - Change Endi" , 1);
+// // 
+// // 	ShowTraceTime(L"GPU - Recalc Start");
+// 
+// 
+// 	//  [2/5/2019 kjky12] 전체 복셀을 미리 생성하기 때문에 삭제 및 재계산을 할 필요가 없다.
+// 	for(int d = 0 ; d < deleteVoxelPos.size() ; d++)
+// 	{
+// 		// 입자 제거후 주변 입자의 외부 노출 갯수 재계산
+// 		ReCalcExternalSide(deleteVoxelPos[d].nX,deleteVoxelPos[d].nY,deleteVoxelPos[d].nZ, g_MapOutsideData);	// 입자 제거후 주변 입자의 외부 노출 갯수 재계산
+// 	}
+// 
+//  
+// 	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideDataDel;
+// 	for(iterOutsideDataTmp = m_mapInsertParticle.begin() ; iterOutsideDataTmp != m_mapInsertParticle.end() ; iterOutsideDataTmp++)
+// 	{
+// 		iterOutsideDataDel = g_MapOutsideData.find(iterOutsideDataTmp->first);
+// 		if(iterOutsideDataDel != g_MapOutsideData.end())
+// 		{
+// 			g_MapOutsideData.erase(iterOutsideDataDel);
+// 		}
+// 
+// 		g_MapOutsideData.insert(make_pair(iterOutsideDataTmp->first,iterOutsideDataTmp->second));
+// 	}
+// 
+// 	ShowTraceTime(L"GPU - Else Endi" , 1);
+// 
+// 	vecDeleParticle.clear();
+// 	m_mapInsertParticle.clear();
+// 
+// 	strTmp.Format(L"%d (%.02f%%)",(int)m_setDeleteParticle.size(), (float)((float)m_setDeleteParticle.size()/(float)m_nCalcTotalCnt) * 100.0);
+// 	m_editGrDisCnt.SetWindowText(strTmp);
+// 
+// 	strTmp.Format(L"%d (%.02f%%)",(int)g_MapOutsideData.size(), (float)((float)g_MapOutsideData.size()/(float)m_nCalcTotalCnt) * 100.0);
+// 	m_editGrTotalCnt.SetWindowText(strTmp);
+// 
+// 	strTmp.Format(L"%d",m_nCalcTryCnt);		
+// 	m_editCalcTryCnt.SetWindowText(strTmp);
 
 // 	ShowTraceTime(L"GPU - Show Start");
 // 

@@ -104,6 +104,29 @@ typedef	struct	 ST_PARTICLE_POS		//	입자 위치 구조체
 
 }ST_PARTICLE_POS;
 
+typedef	struct	 ST_PARTICLE_POS_CUDA		//	입자 위치 구조체 CUDA전용
+{
+	float			fPorosity;					// 공극률(랜덤 분포도 - 라일리) -> 입은 데미지(외부와 내부 둘다 같이 사용해되 될듯하다)
+	bool			abExternalSide[6];			// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤] -> 사용 유무
+	
+	float			fGranularDisintegration;	// 입상붕괴 도달값 (랜덤 분포도 - 가우시안) -> 외부 입상붕괴(체력)
+	/*
+	fHaveWater
+	max : 1.0, 수분 포화율에서 부피 팽창율을 곱해서 1이 넘으면 인근 입자들의 공극률이 높아진다. 
+	횟수가 반복될수록 포화도가 높아진다. 그리고 인근 입자가 붕괴되는 경우 수분포화도를 나눠 가진다.
+	*/	
+	float			fHaveWater;					// 수분포화도 -> 내부에 공극 주변 입자들을 처리할때
+	
+	short			sStoneType;					//StoneType[0:공극, 1:장석, 2:석영, 3:사장석, 4:흑운모, 5:티타나이트, 6:각섬석, 7:녹렴석, 8:녹니석]
+	bool			bInOut;						//! 내부인지 외부인지 확인 변수 0:내부, 1:외부
+
+	short			sLayerIdx;					//! 레이어 정보(0: 가장 외부 -> 숫자가 클수록 표면 정해야할듯)
+	
+
+
+}ST_PARTICLE_POS_CUDA;
+
+
 typedef	struct	 ST_PARTICLE_POS_UNIT_PROCESS		// GPU처리에서 처리되는 데이터 전용 구조체(ST_PARTICLE_POS 구조체의 일부 데이터만 사용!) -> 공유 메모리 전용으로 처리하고 메인 마스킹에 입력 예정
 {
 
