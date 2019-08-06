@@ -411,6 +411,24 @@ __device__ void InputMaskDataToSharedMem(ST_PARTICLE_POS_CUDA	*pstPrarticlePosCu
 }
 
 
+__device__ void InputMaskDataToSharedMemValue(ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCudaMask, 
+											  ST_PARTICLE_POS_UNIT_PROCESS	*astParticle_pos_unitProcess, 
+											  int nIdx,
+											  int threadIdxT, int nPrarticlePosCntCuda)
+{
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdxT].fPorosity;
+			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdxT].fHaveWater;
+		}
+		
+	}
+}
+
+
+
 __global__ void kernelCalcRocking(int nThreadCnt, 
 								  int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCudaMask, 
 								  int nXFileVoxCnt, int nYFileVoxCnt, int nZFileVoxCnt,
@@ -479,7 +497,7 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 			if(fHaveWaterTemp < 0.0)
 				fHaveWaterTemp = 0.0;
 
-							//! 마스킹용 수분
+			//! 마스킹용 수분
 			astParticle_pos_unitProcess[threadIdx.x].fHaveWater += fHaveWaterTemp;
 
 
@@ -504,22 +522,22 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 				
 				//[20190719] kjky12 일단 내부 처리되는걸로 처리되면 수분함수률을 높여서 구분한다. -> 그러고 다시 -1로 변경해줘야할듯	
 				//! 상
-				astParticle_pos_unitProcess[threadIdx.x + 1].fHaveWater += 1.0;
+				//astParticle_pos_unitProcess[threadIdx.x + 1].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 1].fPorosity += (fCalcWaterChange / 5.0);
 				//! 하
-				astParticle_pos_unitProcess[threadIdx.x + 2].fHaveWater += 1.0;
+				//astParticle_pos_unitProcess[threadIdx.x + 2].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 2].fPorosity += (fCalcWaterChange / 5.0);
 				//! 좌
-				astParticle_pos_unitProcess[threadIdx.x + 3].fHaveWater += 1.0;
+				//astParticle_pos_unitProcess[threadIdx.x + 3].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 3].fPorosity += (fCalcWaterChange / 5.0);
 				//! 우
-				astParticle_pos_unitProcess[threadIdx.x + 4].fHaveWater += 1.0;
+				//astParticle_pos_unitProcess[threadIdx.x + 4].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 4].fPorosity += (fCalcWaterChange / 5.0);
 				//! 앞
-				astParticle_pos_unitProcess[threadIdx.x + 5].fHaveWater += 1.0;
+				//astParticle_pos_unitProcess[threadIdx.x + 5].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 5].fPorosity += (fCalcWaterChange / 5.0);
 				//! 뒤
-				astParticle_pos_unitProcess[threadIdx.x + 6].fHaveWater += 1.0;
+				//astParticle_pos_unitProcess[threadIdx.x + 6].fHaveWater += 1.0;
 				astParticle_pos_unitProcess[threadIdx.x + 6].fPorosity += (fCalcWaterChange / 5.0);
 
 			}
@@ -530,34 +548,48 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 /*	ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
 	return;*/
 
+
 	int nIdx = tid;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x].fPorosity;
-		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x].fHaveWater;
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x].fPorosity;
+			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x].fHaveWater;
+		}
+		
 	}
 
 	nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 1].fPorosity;
-		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 1].fHaveWater;
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 1].fPorosity;
+			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 1].fHaveWater;
+		}
 	}
 	
 
 	nIdx = tid - (nXFileVoxCnt * nYFileVoxCnt);
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 2].fPorosity;
-		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 2].fHaveWater;
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 2].fPorosity;
+			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 2].fHaveWater;
+		}
 	}
 	
 
 	nIdx = tid + nXFileVoxCnt;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 3].fPorosity;
-		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 3].fHaveWater;
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 3].fPorosity;
+			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 3].fHaveWater;
+		}
 
 	}
 
@@ -565,22 +597,35 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	nIdx = tid - nXFileVoxCnt;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 4].fPorosity;
-		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 4].fHaveWater;
-
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 4].fPorosity;
+			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 4].fHaveWater;
+		}
 	}
 	
 
 	nIdx = tid - 1;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 5].fPorosity;
-		pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 5].fHaveWater;
-
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 5].fPorosity;
+			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 5].fHaveWater;
+		}
 	}
 	
+	nIdx = tid + 1;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x + 6].fPorosity;
+			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x + 6].fHaveWater;
+		}
+	}
 
-`
+
 	//ViewMaskData(pstPrarticlePosCudaMask, tid, nPrarticlePosCntCuda, nXFileVoxCnt, nYFileVoxCnt);
 
 } 
@@ -599,19 +644,93 @@ __global__ void kernelCalcRockingMasking(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	pstPrarticlePosCuda[tid].fPorosity = pstPrarticlePosCuda[tid].fPorosity + pstPrarticlePosCudaMask[tid].fPorosity;
 	pstPrarticlePosCuda[tid].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater + pstPrarticlePosCudaMask[tid].fHaveWater;
 	
-
-	if(pstPrarticlePosCuda[tid].fHaveWater > 1.0) //! 공극
-	{
-
-	}
 	if(pstPrarticlePosCuda[tid].fPorosity >= pstPrarticlePosCuda[tid].fGranularDisintegration) // 입상붕괴 도달값에 도달하여 제거
 	{
-
+		pstPrarticlePosCuda[tid].sStoneType = -2;
 	}
 
 	//printf("Afte:%03d->%f\n",tid, pstPrarticlePosCuda[tid].fPorosity);
 
 }
+
+__global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda)
+{ 
+	// 수많은 스레드가 동시에 처리한다. // 따라서 threadIdx(스레드 인덱스)를 통해서 스레드들을 구별한다. 
+	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if(tid > nPrarticlePosCntCuda)
+		return;
+	//pstPrarticlePosCuda[tid].abExternalSide[0];
+	memset(pstPrarticlePosCuda[tid].abExternalSide, NULL, sizeof(bool) * 6);
+	
+		
+	//! 상하좌우앞뒤의 복셀이 있는지 확인하고 외부 노출 단면을 체크한다. 
+	int nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+			pstPrarticlePosCuda[nIdx].abExternalSide[0] = true;
+		}
+	}
+	
+
+	nIdx = tid - (nXFileVoxCnt * nYFileVoxCnt);
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+
+		}
+	}
+	
+
+	nIdx = tid + nXFileVoxCnt;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+
+		}
+	}
+
+
+	nIdx = tid - nXFileVoxCnt;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+
+		}
+	}
+	
+
+	nIdx = tid - 1;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+
+		}
+	}
+	
+	nIdx = tid + 1;
+	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+	{
+		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		{
+
+		}
+	}
+
+	if(pstPrarticlePosCuda[tid].sStoneType == -2)
+	{
+
+
+	}
+
+}
+
 
 void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICLE_POS_CUDA	*pstPrarticlePos, ST_PARTICLE_POS_CUDA	*pstPrarticlePosMask)
 {
@@ -692,6 +811,16 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 		
 		kernelCalcRockingMasking<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask);
 	}
+
+	for(int n = 0; n < nBlockCnt; n += nBlockStep)
+	{
+		int nBlockStepTemp = nBlockStep;	
+		if(nBlockCnt - n < nBlockStep)
+			nBlockStepTemp = nBlockCnt - n;
+		
+		kernelReCalcExternalSide<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda);
+	}
+
 	
 	//cudaDeviceSynchronize();
 

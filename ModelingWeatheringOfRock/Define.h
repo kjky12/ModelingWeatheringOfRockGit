@@ -117,7 +117,7 @@ typedef	struct	 ST_PARTICLE_POS_CUDA		//	입자 위치 구조체 CUDA전용
 	*/	
 	float			fHaveWater;					// 수분포화도 -> 내부에 공극 주변 입자들을 처리할때
 	
-	short			sStoneType;					//StoneType[0:공극, 1:장석, 2:석영, 3:사장석, 4:흑운모, 5:티타나이트, 6:각섬석, 7:녹렴석, 8:녹니석]
+	short			sStoneType;					//StoneType[-2:임시 입상붕괴 변수, -1:외부 없는부분 ,0:공극, 1:장석, 2:석영, 3:사장석, 4:흑운모, 5:티타나이트, 6:각섬석, 7:녹렴석, 8:녹니석]
 	bool			bInOut;						//! 내부인지 외부인지 확인 변수 0:내부, 1:외부
 
 	short			sLayerIdx;					//! 레이어 정보(0: 가장 외부 -> 숫자가 클수록 표면 정해야할듯)
