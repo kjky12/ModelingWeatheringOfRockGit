@@ -653,7 +653,8 @@ __global__ void kernelCalcRockingMasking(int nPrarticlePosCntCuda, ST_PARTICLE_P
 
 }
 
-__global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda)
+__global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda
+										 ,int nXFileVoxCnt, int nYFileVoxCnt)
 { 
 	// 수많은 스레드가 동시에 처리한다. // 따라서 threadIdx(스레드 인덱스)를 통해서 스레드들을 구별한다. 
 	int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -670,7 +671,7 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-			pstPrarticlePosCuda[nIdx].abExternalSide[0] = true;
+			pstPrarticlePosCuda[tid].abExternalSide[0] = true;
 		}
 	}
 	
@@ -680,7 +681,10 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-
+			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+			{
+				pstPrarticlePosCuda[tid].abExternalSide[1] = true;
+			}
 		}
 	}
 	
@@ -690,7 +694,10 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-
+			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+			{
+				pstPrarticlePosCuda[tid].abExternalSide[2] = true;
+			}
 		}
 	}
 
@@ -700,7 +707,10 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-
+			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+			{
+				pstPrarticlePosCuda[tid].abExternalSide[3] = true;
+			}
 		}
 	}
 	
@@ -710,7 +720,10 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-
+			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+			{
+				pstPrarticlePosCuda[tid].abExternalSide[4] = true;
+			}
 		}
 	}
 	
@@ -719,13 +732,25 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-
+			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+			{
+				pstPrarticlePosCuda[tid].abExternalSide[5] = true;
+			}
 		}
 	}
 
 	if(pstPrarticlePosCuda[tid].sStoneType == -2)
 	{
-
+		
+		if(pstPrarticlePosCuda[tid].abExternalSide[0] || pstPrarticlePosCuda[tid].abExternalSide[1] || pstPrarticlePosCuda[tid].abExternalSide[2] || pstPrarticlePosCuda[tid].abExternalSide[3] || pstPrarticlePosCuda[tid].abExternalSide[4] || pstPrarticlePosCuda[tid].abExternalSide[5])
+		{
+			pstPrarticlePosCuda[tid].sStoneType = 0; //! 한개라도 있으면 공극
+		}
+		else
+		{
+			 //! 한개도 없으면 외부 노출!
+			pstPrarticlePosCuda[tid].sStoneType = -1;
+		}
 
 	}
 
