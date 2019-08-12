@@ -2160,20 +2160,18 @@ void ThreadCalcRockAging( void* pArguments )
 
 		for(iterOutsideData = g_MapOutsideData.begin() ; iterOutsideData != g_MapOutsideData.end() ; iterOutsideData++)
 		{
-
+			
 			stParticlePos = iterOutsideData->second;
 
 			int x = stParticlePos.x;
 			int y = stParticlePos.y;
 			int z = stParticlePos.z;
-			if(stParticlePos.bUse == true)		// 사용 여부 판단
-			{
 				if(stParticlePos.bInOut == true) //! 외부는 기존 입상붕괴
 				{
 					//! 6면이 다 외부인 경우는 삭제해준다.(하늘에 붕 떠있어서), 
 					if(stParticlePos.iExternalSideCnt == 6) 
 					{
-						stParticlePos.bUse = false;
+						//stParticlePos.bUse = false;
 
 						strKey.Format(L"%d-%d-%d",x,y,z);
 
@@ -2185,7 +2183,7 @@ void ThreadCalcRockAging( void* pArguments )
 					//공극의 경우 외부에 있을수 없다.
 					if(stParticlePos.sStoneType == 0)
 					{
-						stParticlePos.bUse = false;
+						//stParticlePos.bUse = false;
 
 						strKey.Format(L"%d-%d-%d",x,y,z);
 
@@ -2234,7 +2232,7 @@ void ThreadCalcRockAging( void* pArguments )
 						//fPorosity 공극률 >= fGranularDisintegration 입상붕괴 도달값
 						if(stParticlePos.fPorosity >= stParticlePos.fGranularDisintegration) // 입상붕괴 도달값에 도달하여 제거
 						{
-							stParticlePos.bUse = false;
+							//stParticlePos.bUse = false;
 
 							strKey.Format(L"%d-%d-%d",x,y,z);
 
@@ -2388,7 +2386,6 @@ void ThreadCalcRockAging( void* pArguments )
 
 					}
 				}
-			}
 			
 			iterOutsideData->second = stParticlePos;
 		}
@@ -2703,7 +2700,6 @@ void CModelingWeatheringOfRockDlg::ReCalcExternalSide(int x,int y,int z, map<CSt
 		{
 			ST_PARTICLE_POS stParticlePos;
 
-			stParticlePos.bUse = true;
 			stParticlePos.x = x + nPlusX;
 			stParticlePos.y = y + nPlusY;
 			stParticlePos.z = z + nPlusZ;
@@ -4806,7 +4802,7 @@ void CModelingWeatheringOfRockDlg::SaveStepOutsideData(int nStep)
 			fwrite(&stParticlePos.y, sizeof(int), 1, p_Numfile); 
 			fwrite(&stParticlePos.z, sizeof(int), 1, p_Numfile); 
 
-			fwrite(&stParticlePos.bUse, sizeof(bool), 1, p_Numfile); 
+			//fwrite(&stParticlePos.bUse, sizeof(bool), 1, p_Numfile); 
 			fwrite(&stParticlePos.fPorosity, sizeof(float), 1, p_Numfile); 
 			fwrite(&stParticlePos.iExternalSideCnt, sizeof(short), 1, p_Numfile); 
 			fwrite(&stParticlePos.fGranularDisintegration, sizeof(float), 1, p_Numfile); 
@@ -4857,7 +4853,7 @@ void ThreadLoadStepOutsideData( void* pArguments )
 			fread(&stParticlePos.y, sizeof(int), 1, p_Numfile); 
 			fread(&stParticlePos.z, sizeof(int), 1, p_Numfile); 
 
-			fread(&stParticlePos.bUse, sizeof(bool), 1, p_Numfile); 
+			//fread(&stParticlePos.bUse, sizeof(bool), 1, p_Numfile); 
 			fread(&stParticlePos.fPorosity, sizeof(float), 1, p_Numfile); 
 			fread(&stParticlePos.iExternalSideCnt, sizeof(short), 1, p_Numfile); 
 			fread(&stParticlePos.fGranularDisintegration, sizeof(float), 1, p_Numfile); 
@@ -5679,44 +5675,52 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	//std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
 
 
-	for (int a = 0; a < m_nXFileVoxCnt; a++)
+	for (int nZ = 0; nZ < m_nZFileVoxCnt; nZ++)
 	{
-		for (int b = 0; b < m_nYFileVoxCnt; b++)
+		for (int nY = 0; nY < m_nYFileVoxCnt; nY++)
 		{
-			for (int c = 0; c < m_nZFileVoxCnt; c++)
+			for (int nX = 0; nX < m_nXFileVoxCnt; nX++)
 			{
-				
+				unsigned long long nSeekSize = nX  + (m_nXFileVoxCnt * nY) + (m_nXFileVoxCnt * m_nYFileVoxCnt * nZ);
 
 				CString strKey = L"";
-				strKey.Format(L"%d-%d-%d",a,b,c);
+				strKey.Format(L"%d-%d-%d",nX,nY,nZ);
 
 				map<CString,ST_PARTICLE_POS>::iterator iterOutsideData;	
 				iterOutsideData = g_MapOutsideData.find(strKey);
 				if(iterOutsideData != g_MapOutsideData.end())
 				{
-					pstPrarticlePos[a*b*c].fPorosity = iterOutsideData->second.fPorosity;
+					pstPrarticlePos[nSeekSize].x = nX;
+					pstPrarticlePos[nSeekSize].y = nY;
+					pstPrarticlePos[nSeekSize].z = nZ;
 
-					pstPrarticlePos[a*b*c].abExternalSide[0] = iterOutsideData->second.abExternalSide[0];
-					pstPrarticlePos[a*b*c].abExternalSide[1] = iterOutsideData->second.abExternalSide[1];
-					pstPrarticlePos[a*b*c].abExternalSide[2] = iterOutsideData->second.abExternalSide[2];
-					pstPrarticlePos[a*b*c].abExternalSide[3] = iterOutsideData->second.abExternalSide[3];
-					pstPrarticlePos[a*b*c].abExternalSide[4] = iterOutsideData->second.abExternalSide[4];
-					pstPrarticlePos[a*b*c].abExternalSide[5] = iterOutsideData->second.abExternalSide[5];
+					pstPrarticlePos[nSeekSize].fPorosity = iterOutsideData->second.fPorosity;
 
-					pstPrarticlePos[a*b*c].fGranularDisintegration = iterOutsideData->second.fGranularDisintegration;
-					pstPrarticlePos[a*b*c].fHaveWater = iterOutsideData->second.fHaveWater;
-					pstPrarticlePos[a*b*c].sStoneType = iterOutsideData->second.sStoneType;
-					pstPrarticlePos[a*b*c].bInOut = iterOutsideData->second.bInOut;
-					pstPrarticlePos[a*b*c].sLayerIdx = iterOutsideData->second.sLayerIdx;
+					pstPrarticlePos[nSeekSize].abExternalSide[0] = iterOutsideData->second.abExternalSide[0];
+					pstPrarticlePos[nSeekSize].abExternalSide[1] = iterOutsideData->second.abExternalSide[1];
+					pstPrarticlePos[nSeekSize].abExternalSide[2] = iterOutsideData->second.abExternalSide[2];
+					pstPrarticlePos[nSeekSize].abExternalSide[3] = iterOutsideData->second.abExternalSide[3];
+					pstPrarticlePos[nSeekSize].abExternalSide[4] = iterOutsideData->second.abExternalSide[4];
+					pstPrarticlePos[nSeekSize].abExternalSide[5] = iterOutsideData->second.abExternalSide[5];
+
+					pstPrarticlePos[nSeekSize].fGranularDisintegration = iterOutsideData->second.fGranularDisintegration;
+					pstPrarticlePos[nSeekSize].fHaveWater = iterOutsideData->second.fHaveWater;
+					pstPrarticlePos[nSeekSize].sStoneType = iterOutsideData->second.sStoneType;
+					pstPrarticlePos[nSeekSize].bInOut = iterOutsideData->second.bInOut;
+					pstPrarticlePos[nSeekSize].sLayerIdx = iterOutsideData->second.sLayerIdx;
 				}
 				else
 				{
 					//! 없는부분!!
 					ST_PARTICLE_POS_CUDA	st_particle_pos;
 					memset(&st_particle_pos, NULL, sizeof(ST_PARTICLE_POS_CUDA));
+
+					st_particle_pos.x = nX;
+					st_particle_pos.y = nY;
+					st_particle_pos.z = nZ;
 					st_particle_pos.sStoneType = -1;
 
-					pstPrarticlePos[a*b*c] = st_particle_pos;
+					pstPrarticlePos[nSeekSize] = st_particle_pos;
 				}
 
 			}
@@ -5725,15 +5729,110 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 
 	m_nCalcTryCnt++;
 	
+	int nVoxelAllCnt = m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt;
 
 	//SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
 	ShowTraceTime(L"GPU - Calc Rocking Start");
 
-	m_GPUCalcRockAgingInner.SetInnderVoxelData(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt, pstPrarticlePos, pstPrarticlePosMask);
+	m_GPUCalcRockAgingInner.SetInnderVoxelData(nVoxelAllCnt, pstPrarticlePos, pstPrarticlePosMask);
 	
 	//std::copy(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin());
 	ShowTraceTime(L"GPU - Calc Rocking End", 1);
 
+
+	//g_MapOutsideData.clear();
+	map<CString,ST_PARTICLE_POS>							g_MapOutsideDataTemp;	
+
+	CString strKey;
+	m_mapStoneTypeCnt.clear();
+	for (int a = 0; a < nVoxelAllCnt; a++)
+	{
+		ST_PARTICLE_POS_CUDA	stPrarticlePosMask = pstPrarticlePos[a];
+
+		ST_PARTICLE_POS	stParticlePos;
+		
+		int x = a % m_nXFileVoxCnt;
+		int y = ((a / m_nYFileVoxCnt) % m_nYFileVoxCnt);
+		int z = ((a / (m_nXFileVoxCnt * m_nYFileVoxCnt)) % (m_nXFileVoxCnt * m_nYFileVoxCnt));
+
+		//! 일단 최종으로는 뺼거기 떄문에 이렇게 해준다.
+		stParticlePos.x = stPrarticlePosMask.x;
+		stParticlePos.y = stPrarticlePosMask.y;
+		stParticlePos.z = stPrarticlePosMask.z;
+
+// 		stParticlePos.x = x;
+// 		stParticlePos.y = y;
+// 		stParticlePos.z = z;
+
+
+
+		//stParticlePos.y = a / m_nYFileVoxCnt + (a % m_nYFileVoxCnt);
+		//stParticlePos.z = a / (m_nXFileVoxCnt + m_nYFileVoxCnt) + (a % m_nZFileVoxCnt);
+		//stParticlePos.bUse = true;
+		stParticlePos.fPorosity = stPrarticlePosMask.fPorosity;
+		stParticlePos.abExternalSide[0] = stPrarticlePosMask.abExternalSide[0];
+		stParticlePos.abExternalSide[1] = stPrarticlePosMask.abExternalSide[1];
+		stParticlePos.abExternalSide[2] = stPrarticlePosMask.abExternalSide[2];
+		stParticlePos.abExternalSide[3] = stPrarticlePosMask.abExternalSide[3];
+		stParticlePos.abExternalSide[4] = stPrarticlePosMask.abExternalSide[4];
+		stParticlePos.abExternalSide[5] = stPrarticlePosMask.abExternalSide[5];
+		stParticlePos.iExternalSideCnt  = stPrarticlePosMask.abExternalSide[0] + stPrarticlePosMask.abExternalSide[1] + stPrarticlePosMask.abExternalSide[2]
+		+ stPrarticlePosMask.abExternalSide[3] + stPrarticlePosMask.abExternalSide[4] + stPrarticlePosMask.abExternalSide[5];
+		stParticlePos.fGranularDisintegration = stPrarticlePosMask.fGranularDisintegration;
+		stParticlePos.fHaveWater = stPrarticlePosMask.fHaveWater;
+		stParticlePos.sStoneType = stPrarticlePosMask.sStoneType;
+		stParticlePos.bInOut = stPrarticlePosMask.bInOut;
+		stParticlePos.sLayerIdx = stPrarticlePosMask.sLayerIdx;
+
+		if(stParticlePos.sStoneType != -2 && stParticlePos.sStoneType != -1)
+		{
+			strKey.Format(L"%d-%d-%d",stParticlePos.x,stParticlePos.y,stParticlePos.z);
+			g_MapOutsideDataTemp.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
+			//g_MapOutsideData.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+		//! 입자 종류 카운트
+		map<int,int>::iterator iterStoneCnt;
+		iterStoneCnt = m_mapStoneTypeCnt.find(stParticlePos.sStoneType);
+		if(iterStoneCnt != m_mapStoneTypeCnt.end())
+			iterStoneCnt->second++;
+		else
+			m_mapStoneTypeCnt.insert(make_pair(stParticlePos.sStoneType, 1));
+
+	}
+
+
+
+	//g_MapOutsideData.clear();
+	map<CString,ST_PARTICLE_POS>::iterator				iterOutsideDataTemp1;	
+	map<CString,ST_PARTICLE_POS>::iterator				iterOutsideDataTemp2;	
+	g_MapOutsideDataTemp;
+	for (iterOutsideDataTemp1 = g_MapOutsideData.begin(); iterOutsideDataTemp1 != g_MapOutsideData.end(); iterOutsideDataTemp1++)
+	{
+		iterOutsideDataTemp2 = g_MapOutsideDataTemp.find(iterOutsideDataTemp1->first);
+		if(iterOutsideDataTemp2 != g_MapOutsideDataTemp.end())
+		{
+			int n = memcmp(&iterOutsideDataTemp1->second, &iterOutsideDataTemp2->second, sizeof(ST_PARTICLE_POS));
+			if(n == 0)
+			{
+				int k = 0;
+			}
+			else
+			{
+				int a = 0;
+			}
+		}
+		else
+		{
+			int a =0;
+		}
+	}
+
+	SendMessage(WM_FINISH_SIM_ONE_STEP_MSG,m_bStopCalc,0);
+
+
+	int a = 0;
 	//std::transform(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin(), extract_second());
 
 	

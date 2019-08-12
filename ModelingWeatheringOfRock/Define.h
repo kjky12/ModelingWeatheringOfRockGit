@@ -78,7 +78,7 @@ typedef	struct	 ST_PARTICLE_POS		//	입자 위치 구조체
 	int y;
 	int z;
 	
-	bool			bUse;						// 사용여부 -> [1/23/2019 kjky12] 미사용이라고 보면됨
+	//bool			bUse;						// 사용여부 -> [1/23/2019 kjky12] 미사용이라고 보면됨
 	float			fPorosity;					// 공극률(랜덤 분포도 - 라일리) -> 입은 데미지(외부와 내부 둘다 같이 사용해되 될듯하다)
 	short			iExternalSideCnt;			// 외부 노출 단면 개수
 	//vector<short>	vecExternalSide;			// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤]
@@ -106,6 +106,10 @@ typedef	struct	 ST_PARTICLE_POS		//	입자 위치 구조체
 
 typedef	struct	 ST_PARTICLE_POS_CUDA		//	입자 위치 구조체 CUDA전용
 {
+	int x;
+	int y;
+	int z;
+
 	float			fPorosity;					// 공극률(랜덤 분포도 - 라일리) -> 입은 데미지(외부와 내부 둘다 같이 사용해되 될듯하다)
 	bool			abExternalSide[6];			// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤] -> 사용 유무
 	

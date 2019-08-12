@@ -639,6 +639,10 @@ __global__ void kernelCalcRockingMasking(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	if(tid > nPrarticlePosCntCuda)
 		return;
 
+	if(pstPrarticlePosCuda[tid].sStoneType == -1)
+		return;
+
+
 	//printf("Prev:%03d->%f\n",tid, pstPrarticlePosCuda[tid].fPorosity);
 
 	pstPrarticlePosCuda[tid].fPorosity = pstPrarticlePosCuda[tid].fPorosity + pstPrarticlePosCudaMask[tid].fPorosity;
@@ -681,10 +685,7 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			{
-				pstPrarticlePosCuda[tid].abExternalSide[1] = true;
-			}
+			pstPrarticlePosCuda[tid].abExternalSide[1] = true;
 		}
 	}
 	
@@ -694,10 +695,7 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			{
-				pstPrarticlePosCuda[tid].abExternalSide[2] = true;
-			}
+			pstPrarticlePosCuda[tid].abExternalSide[2] = true;
 		}
 	}
 
@@ -707,10 +705,7 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			{
-				pstPrarticlePosCuda[tid].abExternalSide[3] = true;
-			}
+			pstPrarticlePosCuda[tid].abExternalSide[3] = true;
 		}
 	}
 	
@@ -720,10 +715,7 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			{
-				pstPrarticlePosCuda[tid].abExternalSide[4] = true;
-			}
+			pstPrarticlePosCuda[tid].abExternalSide[4] = true;
 		}
 	}
 	
@@ -732,14 +724,11 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
 		{
-			if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			{
-				pstPrarticlePosCuda[tid].abExternalSide[5] = true;
-			}
+			pstPrarticlePosCuda[tid].abExternalSide[5] = true;
 		}
 	}
 
-	if(pstPrarticlePosCuda[tid].sStoneType == -2)
+	if(pstPrarticlePosCuda[tid].sStoneType == -2) //-2 입상붕괴가 일어난 거긴 때문에 -> 공극 또는 외부 없는 입자로 변경해줘야한다
 	{
 		
 		if(pstPrarticlePosCuda[tid].abExternalSide[0] || pstPrarticlePosCuda[tid].abExternalSide[1] || pstPrarticlePosCuda[tid].abExternalSide[2] || pstPrarticlePosCuda[tid].abExternalSide[3] || pstPrarticlePosCuda[tid].abExternalSide[4] || pstPrarticlePosCuda[tid].abExternalSide[5])
@@ -771,6 +760,8 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	{
 		printf( "Error! Malloc \n" );
 	}
+	
+
 
 	if ( cudaSuccess != cudaMalloc(&pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt))
 	{
@@ -804,6 +795,9 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	{
 		printf( "Error! Copy1 \n" );
 	}
+
+
+
 	//cudaMemcpy(pnPrarticlePosCntCuda, &nPrarticlePosCnt, sizeof(int), cudaMemcpyHostToDevice);
 
 
@@ -827,6 +821,8 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 		kernelCalcRocking<<<nBlockStepTemp, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);		
 	}
 	
+
+
 	//nBlockStep = 256;
 	for(int n = 0; n < nBlockCnt; n += nBlockStep)
 	{
@@ -837,16 +833,15 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 		kernelCalcRockingMasking<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask);
 	}
 
-	for(int n = 0; n < nBlockCnt; n += nBlockStep)
-	{
-		int nBlockStepTemp = nBlockStep;	
-		if(nBlockCnt - n < nBlockStep)
-			nBlockStepTemp = nBlockCnt - n;
-		
-		kernelReCalcExternalSide<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda);
-	}
+	//for(int n = 0; n < nBlockCnt; n += nBlockStep)
+	//{
+	//	int nBlockStepTemp = nBlockStep;	
+	//	if(nBlockCnt - n < nBlockStep)
+	//		nBlockStepTemp = nBlockCnt - n;
+	//	
+	//	kernelReCalcExternalSide<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, m_nXFileVoxCnt, m_nYFileVoxCnt);
+	//}
 
-	
 	//cudaDeviceSynchronize();
 
 	//cudaDeviceSynchronize();
@@ -859,7 +854,7 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 	//}
 	//printf("TEST\n");
 	
-	memset(pstPrarticlePos, NULL, nSizeCnt*nPrarticlePosCnt);
+	//memset(pstPrarticlePos, NULL, nSizeCnt*nPrarticlePosCnt);
 
 	if ( cudaSuccess != cudaMemcpy(pstPrarticlePos, pstPrarticlePosCuda, nSizeCnt*nPrarticlePosCnt, cudaMemcpyDeviceToHost))
 	{
