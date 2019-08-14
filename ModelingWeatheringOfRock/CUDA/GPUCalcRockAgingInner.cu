@@ -471,7 +471,7 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	if(pstPrarticlePosCuda[tid].bInOut == true) //! 외부는 기존 입상붕괴
 	{
 		//! 외부 입상붕괴를 수식으로 처리한다.(SHARED 마스킹 전용 메모리에 처리!)
-		 astParticle_pos_unitProcess[threadIdx.x * 7].fPorosity = (pstPrarticlePosCuda[tid].abExternalSide[0] * fCoefficient * fTopRate)
+		 astParticle_pos_unitProcess[threadIdx.x].fPorosity = (pstPrarticlePosCuda[tid].abExternalSide[0] * fCoefficient * fTopRate)
 			 +  (pstPrarticlePosCuda[tid].abExternalSide[1] * fCoefficient * fBottomRate)
 			 +  (pstPrarticlePosCuda[tid].abExternalSide[2] * fCoefficient * fSideRate)
 			 +  (pstPrarticlePosCuda[tid].abExternalSide[3] * fCoefficient * fSideRate)
@@ -557,7 +557,6 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 			pstPrarticlePosCudaMask[nIdx].fPorosity += astParticle_pos_unitProcess[threadIdx.x].fPorosity;
 			pstPrarticlePosCudaMask[nIdx].fHaveWater += astParticle_pos_unitProcess[threadIdx.x].fHaveWater;
 		}
-		
 	}
 
 	nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
@@ -582,7 +581,7 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	}
 	
 
-	nIdx = tid + nXFileVoxCnt;
+	nIdx = tid - nXFileVoxCnt;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
@@ -594,7 +593,7 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	}
 
 
-	nIdx = tid - nXFileVoxCnt;
+	nIdx = tid + nXFileVoxCnt;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
 		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
@@ -666,54 +665,63 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	if(tid > nPrarticlePosCntCuda)
 		return;
 	//pstPrarticlePosCuda[tid].abExternalSide[0];
-	memset(pstPrarticlePosCuda[tid].abExternalSide, NULL, sizeof(bool) * 6);
+	memset(pstPrarticlePosCuda[tid].abExternalSide, false, sizeof(bool) * 6);
 	
+
+	//printf("tid : %d\n", tid);
 		
 	//! 상하좌우앞뒤의 복셀이 있는지 확인하고 외부 노출 단면을 체크한다. 
+
 	int nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		//printf("INNNNN2\n\n\n");
+		if(pstPrarticlePosCuda[nIdx].sStoneType == -1)
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[0] = true;
 		}
 	}
 	
-
+	
+	
 	nIdx = tid - (nXFileVoxCnt * nYFileVoxCnt);
+	//printf("Idx : %d\ttid : %d\n", nIdx, tid);
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		//printf("INNNNN1\n\n\n");
+		
+		if(pstPrarticlePosCuda[nIdx].sStoneType == -1)
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[1] = true;
 		}
 	}
-	
 
-	nIdx = tid + nXFileVoxCnt;
+	
+	
+	nIdx = tid - nXFileVoxCnt;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		//printf("INNNNN3\n\n\n");
+		if(pstPrarticlePosCuda[nIdx].sStoneType == -1)
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[2] = true;
 		}
 	}
 
-
-	nIdx = tid - nXFileVoxCnt;
+	nIdx = tid + nXFileVoxCnt;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		//printf("INNNNN4\n\n\n");
+		if(pstPrarticlePosCuda[nIdx].sStoneType == -1)
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[3] = true;
 		}
 	}
-	
 
 	nIdx = tid - 1;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		if(pstPrarticlePosCuda[nIdx].sStoneType == -1)
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[4] = true;
 		}
@@ -722,7 +730,7 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 	nIdx = tid + 1;
 	if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
 	{
-		if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+		if(pstPrarticlePosCuda[nIdx].sStoneType == -1)
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[5] = true;
 		}
@@ -734,6 +742,8 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 		if(pstPrarticlePosCuda[tid].abExternalSide[0] || pstPrarticlePosCuda[tid].abExternalSide[1] || pstPrarticlePosCuda[tid].abExternalSide[2] || pstPrarticlePosCuda[tid].abExternalSide[3] || pstPrarticlePosCuda[tid].abExternalSide[4] || pstPrarticlePosCuda[tid].abExternalSide[5])
 		{
 			pstPrarticlePosCuda[tid].sStoneType = 0; //! 한개라도 있으면 공극
+			//! 입상붕괴가 일어나 공극이 된 복셀의 수분함수량을 0.0으로 초기화
+			pstPrarticlePosCuda[tid].fHaveWater = 0.0;
 		}
 		else
 		{
@@ -818,11 +828,15 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 		int nBlockStepTemp = nBlockStep;	
 		if(nBlockCnt - n < nBlockStep)
 			nBlockStepTemp = nBlockCnt - n;
-		kernelCalcRocking<<<nBlockStepTemp, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);		
+		kernelCalcRocking<<<nBlockStepTemp, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, 
+			m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, 
+			m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, 
+			m_fCalcWaterInnerAbsorption, 
+			m_fCalcLayerWaterAborption, m_fCalcWaterChange);		
 	}
 	
-
-
+	
+	
 	//nBlockStep = 256;
 	for(int n = 0; n < nBlockCnt; n += nBlockStep)
 	{
@@ -833,14 +847,14 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICL
 		kernelCalcRockingMasking<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask);
 	}
 
-	//for(int n = 0; n < nBlockCnt; n += nBlockStep)
-	//{
-	//	int nBlockStepTemp = nBlockStep;	
-	//	if(nBlockCnt - n < nBlockStep)
-	//		nBlockStepTemp = nBlockCnt - n;
-	//	
-	//	kernelReCalcExternalSide<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, m_nXFileVoxCnt, m_nYFileVoxCnt);
-	//}
+	for(int n = 0; n < nBlockCnt; n += nBlockStep)
+	{
+		int nBlockStepTemp = nBlockStep;	
+		if(nBlockCnt - n < nBlockStep)
+			nBlockStepTemp = nBlockCnt - n;
+		
+		kernelReCalcExternalSide<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, m_nXFileVoxCnt, m_nYFileVoxCnt);
+	}
 
 	//cudaDeviceSynchronize();
 

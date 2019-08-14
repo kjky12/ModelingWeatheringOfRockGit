@@ -2042,21 +2042,15 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging2()
 //! 한번 수행 버튼
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging3()
 {
+
 	m_bStopCalc = TRUE;
 
 	//OnBnClickedButtonCalcRockAging();
 	//_beginthread( ThreadCalcRockAging, 0, this);
 	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
 	{
-// 		ST_PARTICLE_POS	*pstPrarticlePos = NULL;
-// 		pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
-// 		std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
-// 
-// 		m_GPUCalcRockAgingInner;
-// 
-// 
-// 		M_A_DELETE(pstPrarticlePos);
-
+		CalcRockAgingSetData();
+		OnBnClickedButtonSolidData3();
 
 
 	}
@@ -5664,6 +5658,9 @@ struct extract_second
 
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 {
+	map<CString,ST_PARTICLE_POS>							mapOutsideDataTemp;	
+	mapOutsideDataTemp = g_MapOutsideData;
+
 	ST_PARTICLE_POS_CUDA	*pstPrarticlePos = NULL;
 	ST_PARTICLE_POS_CUDA	*pstPrarticlePosMask = NULL;
 	pstPrarticlePos = new ST_PARTICLE_POS_CUDA[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
@@ -5671,6 +5668,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	memset(pstPrarticlePos, NULL, sizeof(ST_PARTICLE_POS_CUDA) * m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 	memset(pstPrarticlePosMask, NULL, sizeof(ST_PARTICLE_POS_CUDA) * m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 
+	SetGpuData();
 
 	//std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
 
@@ -5740,8 +5738,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	ShowTraceTime(L"GPU - Calc Rocking End", 1);
 
 
-	//g_MapOutsideData.clear();
-	map<CString,ST_PARTICLE_POS>							g_MapOutsideDataTemp;	
+	g_MapOutsideData.clear();
 
 	CString strKey;
 	m_mapStoneTypeCnt.clear();
@@ -5784,34 +5781,46 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		stParticlePos.bInOut = stPrarticlePosMask.bInOut;
 		stParticlePos.sLayerIdx = stPrarticlePosMask.sLayerIdx;
 
-		if(stParticlePos.sStoneType != -2 && stParticlePos.sStoneType != -1)
+		if(stParticlePos.sStoneType == -2)
 		{
-			strKey.Format(L"%d-%d-%d",stParticlePos.x,stParticlePos.y,stParticlePos.z);
-			g_MapOutsideDataTemp.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
-			//g_MapOutsideData.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
+			int a= 0;
 		}
 
-		//////////////////////////////////////////////////////////////////////////
-		//! 입자 종류 카운트
-		map<int,int>::iterator iterStoneCnt;
-		iterStoneCnt = m_mapStoneTypeCnt.find(stParticlePos.sStoneType);
-		if(iterStoneCnt != m_mapStoneTypeCnt.end())
-			iterStoneCnt->second++;
+
+		if(stParticlePos.sStoneType != -1)
+		{
+			strKey.Format(L"%d-%d-%d",stParticlePos.x,stParticlePos.y,stParticlePos.z);
+			//g_MapOutsideDataTemp.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
+			g_MapOutsideData.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
+
+
+			//////////////////////////////////////////////////////////////////////////
+			//! 입자 종류 카운트
+			map<int,int>::iterator iterStoneCnt;
+			iterStoneCnt = m_mapStoneTypeCnt.find(stParticlePos.sStoneType);
+			if(iterStoneCnt != m_mapStoneTypeCnt.end())
+				iterStoneCnt->second++;
+			else
+				m_mapStoneTypeCnt.insert(make_pair(stParticlePos.sStoneType, 1));
+			
+		}
 		else
-			m_mapStoneTypeCnt.insert(make_pair(stParticlePos.sStoneType, 1));
+		{
+
+		}
+
 
 	}
 
-
+	//SetStoneTypeCntView();
 
 	//g_MapOutsideData.clear();
 	map<CString,ST_PARTICLE_POS>::iterator				iterOutsideDataTemp1;	
-	map<CString,ST_PARTICLE_POS>::iterator				iterOutsideDataTemp2;	
-	g_MapOutsideDataTemp;
-	for (iterOutsideDataTemp1 = g_MapOutsideData.begin(); iterOutsideDataTemp1 != g_MapOutsideData.end(); iterOutsideDataTemp1++)
+	map<CString,ST_PARTICLE_POS>::iterator				iterOutsideDataTemp2;		
+	for (iterOutsideDataTemp1 = mapOutsideDataTemp.begin(); iterOutsideDataTemp1 != mapOutsideDataTemp.end(); iterOutsideDataTemp1++)
 	{
-		iterOutsideDataTemp2 = g_MapOutsideDataTemp.find(iterOutsideDataTemp1->first);
-		if(iterOutsideDataTemp2 != g_MapOutsideDataTemp.end())
+		iterOutsideDataTemp2 = g_MapOutsideData.find(iterOutsideDataTemp1->first);
+		if(iterOutsideDataTemp2 != g_MapOutsideData.end())
 		{
 			int n = memcmp(&iterOutsideDataTemp1->second, &iterOutsideDataTemp2->second, sizeof(ST_PARTICLE_POS));
 			if(n == 0)
@@ -5822,6 +5831,41 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 			{
 				int a = 0;
 			}
+
+			if(iterOutsideDataTemp1->second.abExternalSide[0] == iterOutsideDataTemp2->second.abExternalSide[0])
+			{
+				int a = 0;
+			}
+
+
+			if(iterOutsideDataTemp1->second.abExternalSide[1] == iterOutsideDataTemp2->second.abExternalSide[1])
+			{
+				int a = 0;
+			}
+
+			if(iterOutsideDataTemp1->second.abExternalSide[2] == iterOutsideDataTemp2->second.abExternalSide[2])
+			{
+				int a = 0;
+			}
+
+
+			if(iterOutsideDataTemp1->second.abExternalSide[3] == iterOutsideDataTemp2->second.abExternalSide[3])
+			{
+				int a = 0;
+			}
+
+			if(iterOutsideDataTemp1->second.abExternalSide[4] == iterOutsideDataTemp2->second.abExternalSide[4])
+			{
+				int a = 0;
+			}
+
+
+			if(iterOutsideDataTemp1->second.abExternalSide[5] == iterOutsideDataTemp2->second.abExternalSide[5])
+			{
+				int a = 0;
+			}
+
+
 		}
 		else
 		{

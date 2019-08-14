@@ -73,3 +73,7 @@ ModelingWeatheringOfRock/x64/Debug/PieChartCtrl.obj
 ModelingWeatheringOfRock/x64/Debug/ProbDistribution.obj
 ModelingWeatheringOfRock/x64/Debug/stdafx.obj
 ModelingWeatheringOfRock/x64/Debug/vc110.idb
+*.dat
+*.pdb
+*.ilk
+*.aps
