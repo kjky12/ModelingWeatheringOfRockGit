@@ -100,7 +100,20 @@ typedef	struct	 ST_PARTICLE_POS		//	입자 위치 구조체
 
 	short			sLayerIdx;					//! 레이어 정보(0: 가장 외부 -> 숫자가 클수록 표면 정해야할듯)
 	
-
+	ST_PARTICLE_POS()
+	{
+		x = -1;
+		y = -1;
+		z = -1;
+		fPorosity = -999;					// 공극률(랜덤 분포도 - 라일리) -> 입은 데미지(외부와 내부 둘다 같이 사용해되 될듯하다)
+		iExternalSideCnt = -999;			// 외부 노출 단면 개수
+		abExternalSide[6];				// 외부 노출 단면 [0:상,1:하,2:좌,3:우,4:앞,5:뒤] -> 사용 유무
+		fGranularDisintegration = -999;	// 입상붕괴 도달값 (랜덤 분포도 - 가우시안) -> 외부 입상붕괴(체력)
+		fHaveWater = -999;					// 수분포화도 -> 내부에 공극 주변 입자들을 처리할때
+		sStoneType = -999;					//StoneType[0:공극, 1:장석, 2:석영, 3:사장석, 4:흑운모, 5:티타나이트, 6:각섬석, 7:녹렴석, 8:녹니석]
+		bInOut = -1;						//! 내부인지 외부인지 확인 변수 0:내부, 1:외부
+		sLayerIdx = -999;					//! 레이어 정보(0: 가장 외부 -> 숫자가 클수록 표면 정해야할듯)
+	}
 
 }ST_PARTICLE_POS;
 

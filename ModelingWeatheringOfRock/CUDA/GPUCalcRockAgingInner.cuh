@@ -48,7 +48,7 @@ class CGPUCalcRockAgingInner
 
 	//ST_PARTICLE_POS	m_st_particle_pos;
 
-	void SetInnderVoxelData(int nPrarticlePosCnt, ST_PARTICLE_POS_CUDA	*pstPrarticlePos, ST_PARTICLE_POS_CUDA	*pstPrarticlePosMask);
+	void SetInnderVoxelData(int nRepeatCnt, int nPrarticlePosCnt, ST_PARTICLE_POS_CUDA	*pstPrarticlePos, ST_PARTICLE_POS_CUDA	*pstPrarticlePosMask);
 
 };
 

@@ -383,12 +383,16 @@ public:
 	afx_msg void OnCbnSelchangeComboUseBlockThread();
 	CComboBox m_comboProcessCalcRocking;
 	afx_msg void OnCbnSelchangeComboProcessCalcRocking();
-	afx_msg void OnBnClickedButtonSolidData3();
+	
 
 
 	void SetGpuData();
 	afx_msg void OnBnClickedButton5();
 	afx_msg void OnBnClickedButtonObjFileModeling5();
+
+
+	void CalcRockingGpu(int nRepeatCnt);
+
 };
 
 

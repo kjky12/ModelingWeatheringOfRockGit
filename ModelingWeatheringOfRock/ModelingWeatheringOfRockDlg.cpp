@@ -343,7 +343,7 @@ BEGIN_MESSAGE_MAP(CModelingWeatheringOfRockDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_SEE, &CModelingWeatheringOfRockDlg::OnBnClickedButtonSee)
 	ON_CBN_SELCHANGE(IDC_COMBO_USE_BLOCK_THREAD, &CModelingWeatheringOfRockDlg::OnCbnSelchangeComboUseBlockThread)
 	ON_CBN_SELCHANGE(IDC_COMBO_PROCESS_CALC_ROCKING, &CModelingWeatheringOfRockDlg::OnCbnSelchangeComboProcessCalcRocking)
-	ON_BN_CLICKED(IDC_BUTTON_SOLID_DATA3, &CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3)
+	
 	ON_BN_CLICKED(IDC_BUTTON5, &CModelingWeatheringOfRockDlg::OnBnClickedButton5)
 	ON_BN_CLICKED(IDC_BUTTON_OBJ_FILE_MODELING5, &CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5)
 END_MESSAGE_MAP()
@@ -1943,12 +1943,46 @@ LRESULT CModelingWeatheringOfRockDlg::OnCalcRockAgingMsg(WPARAM wParam, LPARAM l
 
 	OnCbnSelchangeCombo1();
 
-	if((int)wParam == 1)
+
+	if(lParam == 999) // GPU처리;
 	{
-			//OnBnClickedButtonCalcExternalSide();
+		CString strTmp;
+		//strTmp.Format(L"%d (%.02f%%)",(int)m_setDeleteParticle.size(), (float)((float)m_setDeleteParticle.size()/(float)m_nCalcTotalCnt) * 100.0);
+		m_editGrDisCnt.SetWindowText(L"-");
+
+		//strTmp.Format(L"%d (%.02f%%)",(int)g_MapOutsideData.size(), (float)((float)g_MapOutsideData.size()/(float)m_nCalcTotalCnt) * 100.0);
+		m_editGrTotalCnt.SetWindowText(L"-");
+
+		strTmp.Format(L"%d",m_nCalcTryCnt);		
+		m_editCalcTryCnt.SetWindowText(strTmp);
+
+
 	}
 	else
-		OnBnClickedButtonCalcRockAging();
+	{
+		CString strTmp;
+		strTmp.Format(L"%d (%.02f%%)",(int)m_setDeleteParticle.size(), (float)((float)m_setDeleteParticle.size()/(float)m_nCalcTotalCnt) * 100.0);
+		m_editGrDisCnt.SetWindowText(strTmp);
+
+		strTmp.Format(L"%d (%.02f%%)",(int)g_MapOutsideData.size(), (float)((float)g_MapOutsideData.size()/(float)m_nCalcTotalCnt) * 100.0);
+		m_editGrTotalCnt.SetWindowText(strTmp);
+
+		strTmp.Format(L"%d",m_nCalcTryCnt);		
+		m_editCalcTryCnt.SetWindowText(strTmp);
+
+
+		//! 여기가 CPU처리
+		if((int)wParam == 1)
+		{
+			//OnBnClickedButtonCalcExternalSide();
+		}
+		else
+		{
+			OnBnClickedButtonCalcRockAging();
+		}
+	}
+
+	
 
 
 	return FALSE;
@@ -1995,18 +2029,30 @@ bool CModelingWeatheringOfRockDlg::CalcRockAgingSetData()
 	return true;
 }
 
+//! 시작 버튼
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging()
 {
 	m_bStopCalc = FALSE;
 
-	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
-	{
+ 	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
+ 	{
+		CString strTemp = L"";
+		m_EditStopSimulCnt.GetWindowTextW(strTemp);
 
-	}
-	else//CPU
-	{
+		
+
+		CalcRockingGpu(_wtoi(strTemp) - m_nCalcTryCnt + 1);
+ 	}
+ 	else//CPU
+ 	{
 		if(CalcRockAgingSetData())
+		{
 			_beginthread( ThreadCalcRockAging, 0, this);
+		}
+		else
+		{
+
+		}
 
 	}
 
@@ -2020,19 +2066,19 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging2()
 {
 	m_bStopCalc = FALSE;
 
-	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
-	{
-
-	}
-	else//CPU
-	{
+// 	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
+// 	{
+// 
+// 	}
+// 	else//CPU
+// 	{
 		if(CalcRockAgingSetData())
 		{
 
 			_beginthread( ThreadCalcRockAging, 0, this);
 		}
 
-	}
+//	}
 
 	//OnBnClickedButtonCalcRockAging();
 	//_beginthread( ThreadCalcRockAging, 0, this);
@@ -2042,27 +2088,23 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging2()
 //! 한번 수행 버튼
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging3()
 {
+
 	m_bStopCalc = TRUE;
+	CalcRockAgingSetData();
 
 	//OnBnClickedButtonCalcRockAging();
 	//_beginthread( ThreadCalcRockAging, 0, this);
 	if(m_comboProcessCalcRocking.GetCurSel() == 0) //GPU
 	{
-// 		ST_PARTICLE_POS	*pstPrarticlePos = NULL;
-// 		pstPrarticlePos = new ST_PARTICLE_POS[g_MapOutsideData.size()];
-// 		std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
-// 
-// 		m_GPUCalcRockAgingInner;
-// 
-// 
-// 		M_A_DELETE(pstPrarticlePos);
+		
 
+		//CalcRockingGpu(m_nCalcTryCnt);
+		CalcRockingGpu(1);
 
 
 	}
 	else//CPU
 	{
-		CalcRockAgingSetData();
 		_beginthread( ThreadCalcRockAging, 0, this);
 
 	}
@@ -2247,6 +2289,7 @@ void ThreadCalcRockAging( void* pArguments )
 					if(stParticlePos.sStoneType != 0) //! 공극만 처리해야한다.
 						continue;
 					
+					
 
 					//! 수분 흡수율
 					fCalcWaterInnerAbsorption;
@@ -2327,62 +2370,75 @@ void ThreadCalcRockAging( void* pArguments )
 								iterOutsideDataTmpInner = g_MapOutsideData.find(strKey);
 								if(iterOutsideDataTmpInner != g_MapOutsideData.end())
 								{
-									//! 주위 입자 타입이 공극이면 무시해준다.
-									if(iterOutsideDataTmpInner->second.sStoneType == 0)
-									{
-										//! 공극 수분율을 합쳐주기 위해서 밑에서 무시해준다.
-										if(iterOutsideDataTmpInner->second.fHaveWater < 0)
-											iterOutsideDataTmpInner->second.fHaveWater = 0;
-										fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
-										//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
-										vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
-
-										continue;
-									}
-									
-									// [2/11/2019 kjky12] 여기서 인근 값을 찾게되면 입상붕괴를 수행해야한다... 정의가 필요하다
-									//! 일단 부피팽창률로한다
 									iterOutsideDataTmpInner->second.fPorosity += (fCalcWaterChange / 5.0);
 
 									if(iterOutsideDataTmpInner->second.fPorosity >= iterOutsideDataTmpInner->second.fGranularDisintegration) // 입상붕괴 도달값에 도달하여 제거
 									{
 										if(iterOutsideDataTmpInner->second.fHaveWater < 0)
 											iterOutsideDataTmpInner->second.fHaveWater = 0;
-										fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
+
 										//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
-										vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
+										vecPorosity.push_back(iterOutsideDataTmpInner->second);
+
 									}
+//  [8/16/2019 kjky12] 이건 추후에 입상붕괴 알고리즘이 추가되는경우 해줘야된다고 생각함
+// 									//! 주위 입자 타입이 공극이면 무시해준다.
+// 									if(iterOutsideDataTmpInner->second.sStoneType == 0)
+// 									{
+// 										//! 공극 수분율을 합쳐주기 위해서 밑에서 무시해준다.
+// 										if(iterOutsideDataTmpInner->second.fHaveWater < 0)
+// 											iterOutsideDataTmpInner->second.fHaveWater = 0;
+// 										fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
+// 										//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다. ->주변이 공극이니까 그 공긍게 대한 수분 함수율을 합쳐준다
+// 										vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
+// 
+// 										continue;
+// 									}
+// 									
+// 									// [2/11/2019 kjky12] 여기서 인근 값을 찾게되면 입상붕괴를 수행해야한다... 정의가 필요하다
+// 									//! 일단 부피팽창률로한다
+// 									iterOutsideDataTmpInner->second.fPorosity += (fCalcWaterChange / 5.0);
+// 
+// 									if(iterOutsideDataTmpInner->second.fPorosity >= iterOutsideDataTmpInner->second.fGranularDisintegration) // 입상붕괴 도달값에 도달하여 제거
+// 									{
+// 										if(iterOutsideDataTmpInner->second.fHaveWater < 0)
+// 											iterOutsideDataTmpInner->second.fHaveWater = 0;
+// 										fTotalHaveWater += iterOutsideDataTmpInner->second.fHaveWater;
+// 										//! 여기서 바꾸게되면 중복으로 계산이 될 수 있기 떄문에 계산하지 않는다.
+// 										vecPorosityTemp.push_back(iterOutsideDataTmpInner->second);
+// 									}
 
 								}
 
 							}
 
 						}
-
-						//////////////////////////////////////////////////////////////////////////
-						//! 여기서 입자 -> 공극으로 바뀐 항목에 수분 포화도를 n으로 나누어 넣어준다.
-						int nChangePorosity = vecPorosityTemp.size();
-						for (int nT = 0; nT < nChangePorosity; nT++)
-						{
-							strKey.Format(L"%d-%d-%d", vecPorosityTemp[nT].x, vecPorosityTemp[nT].y, vecPorosityTemp[nT].z);
-							iterOutsideDataTmp = g_MapOutsideData.find(strKey);
-							if(iterOutsideDataTmp != g_MapOutsideData.end())
-							{
-								//! 주위 공극과 수분율이 합쳐진다.
-								iterOutsideDataTmp->second.fHaveWater = (fTotalHaveWater + stParticlePos.fHaveWater) / (float)(nChangePorosity + 1);
-
-								//! 주위 입자 타입이 공극이면 수분율만 합치고 무시해준다.
-								if(iterOutsideDataTmp->second.sStoneType == 0)
-									continue;
-
-								vecPorosity.push_back(iterOutsideDataTmp->second);
-							}
-
-						}
+						/*
+//  [8/16/2019 kjky12] 이건 추후에 입상붕괴 알고리즘이 추가되는경우 해줘야된다고 생각함
+// 						//////////////////////////////////////////////////////////////////////////
+// 						//! 여기서 입자 -> 공극으로 바뀐 항목에 수분 포화도를 n으로 나누어 넣어준다.
+// 						int nChangePorosity = vecPorosityTemp.size();
+// 						for (int nT = 0; nT < nChangePorosity; nT++)
+// 						{
+// 							strKey.Format(L"%d-%d-%d", vecPorosityTemp[nT].x, vecPorosityTemp[nT].y, vecPorosityTemp[nT].z);
+// 							iterOutsideDataTmp = g_MapOutsideData.find(strKey);
+// 							if(iterOutsideDataTmp != g_MapOutsideData.end())
+// 							{
+// 								//! 주위 공극과 수분율이 합쳐진다.
+// 								iterOutsideDataTmp->second.fHaveWater = (fTotalHaveWater + stParticlePos.fHaveWater) / (float)(nChangePorosity + 1);
+// 
+// 								//! 주위 입자 타입이 공극이면 수분율만 합치고 무시해준다.
+// 								if(iterOutsideDataTmp->second.sStoneType == 0)
+// 									continue;
+// 
+// 								vecPorosity.push_back(iterOutsideDataTmp->second);
+// 							}
+// 
+// 						}
 
 						stParticlePos.fHaveWater = (fTotalHaveWater + stParticlePos.fHaveWater) / (float)(nChangePorosity + 1);
-
-						
+						*/
+						stParticlePos.fHaveWater = 1.0;
 
 					}
 				}
@@ -2524,16 +2580,6 @@ void ThreadCalcRockAging( void* pArguments )
 
 	vecDeleParticle.clear();
 	pParent->m_mapInsertParticle.clear();
-
-	strTmp.Format(L"%d (%.02f%%)",(int)pParent->m_setDeleteParticle.size(), (float)((float)pParent->m_setDeleteParticle.size()/(float)pParent->m_nCalcTotalCnt) * 100.0);
-	pParent->m_editGrDisCnt.SetWindowText(strTmp);
-
-	strTmp.Format(L"%d (%.02f%%)",(int)g_MapOutsideData.size(), (float)((float)g_MapOutsideData.size()/(float)pParent->m_nCalcTotalCnt) * 100.0);
-	pParent->m_editGrTotalCnt.SetWindowText(strTmp);
-
-	strTmp.Format(L"%d",pParent->m_nCalcTryCnt);		
-	pParent->m_editCalcTryCnt.SetWindowText(strTmp);
-
 
 // 	int nShowCnt = 6;
 // 	//g_MapShowData.clear();
@@ -5662,8 +5708,11 @@ struct extract_second
 	}
 };
 
-void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
+void CModelingWeatheringOfRockDlg::CalcRockingGpu(int nRepeatCnt)
 {
+	map<CString,ST_PARTICLE_POS>							mapOutsideDataTemp;	
+	mapOutsideDataTemp = g_MapOutsideData;
+
 	ST_PARTICLE_POS_CUDA	*pstPrarticlePos = NULL;
 	ST_PARTICLE_POS_CUDA	*pstPrarticlePosMask = NULL;
 	pstPrarticlePos = new ST_PARTICLE_POS_CUDA[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
@@ -5671,6 +5720,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	memset(pstPrarticlePos, NULL, sizeof(ST_PARTICLE_POS_CUDA) * m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 	memset(pstPrarticlePosMask, NULL, sizeof(ST_PARTICLE_POS_CUDA) * m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 
+	SetGpuData();
 
 	//std::transform(g_MapOutsideData.begin(), g_MapOutsideData.end(), pstPrarticlePos, extract_second());
 
@@ -5727,21 +5777,20 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		}
 	}
 
-	m_nCalcTryCnt++;
+	
 	
 	int nVoxelAllCnt = m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt;
 
-	//SetInnderVoxelData(g_MapOutsideData.size(), pstPrarticlePos, pstPrarticlePosMask);
+	
 	ShowTraceTime(L"GPU - Calc Rocking Start");
 
-	m_GPUCalcRockAgingInner.SetInnderVoxelData(nVoxelAllCnt, pstPrarticlePos, pstPrarticlePosMask);
+	m_GPUCalcRockAgingInner.SetInnderVoxelData(nRepeatCnt, nVoxelAllCnt, pstPrarticlePos, pstPrarticlePosMask);
 	
 	//std::copy(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin());
 	ShowTraceTime(L"GPU - Calc Rocking End", 1);
 
 
-	//g_MapOutsideData.clear();
-	map<CString,ST_PARTICLE_POS>							g_MapOutsideDataTemp;	
+	g_MapOutsideData.clear();
 
 	CString strKey;
 	m_mapStoneTypeCnt.clear();
@@ -5784,34 +5833,54 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		stParticlePos.bInOut = stPrarticlePosMask.bInOut;
 		stParticlePos.sLayerIdx = stPrarticlePosMask.sLayerIdx;
 
-		if(stParticlePos.sStoneType != -2 && stParticlePos.sStoneType != -1)
+		if(stParticlePos.sStoneType == -2)
 		{
-			strKey.Format(L"%d-%d-%d",stParticlePos.x,stParticlePos.y,stParticlePos.z);
-			g_MapOutsideDataTemp.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
-			//g_MapOutsideData.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
+			int a= 0;
 		}
 
-		//////////////////////////////////////////////////////////////////////////
-		//! 입자 종류 카운트
-		map<int,int>::iterator iterStoneCnt;
-		iterStoneCnt = m_mapStoneTypeCnt.find(stParticlePos.sStoneType);
-		if(iterStoneCnt != m_mapStoneTypeCnt.end())
-			iterStoneCnt->second++;
+
+		if(stParticlePos.sStoneType != -1)
+		{
+			strKey.Format(L"%d-%d-%d",stParticlePos.x,stParticlePos.y,stParticlePos.z);
+			//g_MapOutsideDataTemp.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
+
+
+// 			map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;	// Map <배열 XYZ 위치  / 입자 위치 정보> 
+// 			iterOutsideData = g_MapOutsideData.find(strKey);
+// 			if(iterOutsideData == g_MapOutsideData.end())
+// 				int a= 0;
+			g_MapOutsideData.insert(make_pair(strKey,stParticlePos));		//! 중심 레이어
+
+
+			//////////////////////////////////////////////////////////////////////////
+			//! 입자 종류 카운트
+			map<int,int>::iterator iterStoneCnt;
+			iterStoneCnt = m_mapStoneTypeCnt.find(stParticlePos.sStoneType);
+			if(iterStoneCnt != m_mapStoneTypeCnt.end())
+				iterStoneCnt->second++;
+			else
+				m_mapStoneTypeCnt.insert(make_pair(stParticlePos.sStoneType, 1));
+			
+		}
 		else
-			m_mapStoneTypeCnt.insert(make_pair(stParticlePos.sStoneType, 1));
+		{
+
+		}
+
 
 	}
 
+	
 
+	//SetStoneTypeCntView();
 
 	//g_MapOutsideData.clear();
 	map<CString,ST_PARTICLE_POS>::iterator				iterOutsideDataTemp1;	
-	map<CString,ST_PARTICLE_POS>::iterator				iterOutsideDataTemp2;	
-	g_MapOutsideDataTemp;
-	for (iterOutsideDataTemp1 = g_MapOutsideData.begin(); iterOutsideDataTemp1 != g_MapOutsideData.end(); iterOutsideDataTemp1++)
+	map<CString,ST_PARTICLE_POS>::iterator				iterOutsideDataTemp2;		
+	for (iterOutsideDataTemp1 = mapOutsideDataTemp.begin(); iterOutsideDataTemp1 != mapOutsideDataTemp.end(); iterOutsideDataTemp1++)
 	{
-		iterOutsideDataTemp2 = g_MapOutsideDataTemp.find(iterOutsideDataTemp1->first);
-		if(iterOutsideDataTemp2 != g_MapOutsideDataTemp.end())
+		iterOutsideDataTemp2 = g_MapOutsideData.find(iterOutsideDataTemp1->first);
+		if(iterOutsideDataTemp2 != g_MapOutsideData.end())
 		{
 			int n = memcmp(&iterOutsideDataTemp1->second, &iterOutsideDataTemp2->second, sizeof(ST_PARTICLE_POS));
 			if(n == 0)
@@ -5822,6 +5891,41 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 			{
 				int a = 0;
 			}
+
+			if(iterOutsideDataTemp1->second.abExternalSide[0] == iterOutsideDataTemp2->second.abExternalSide[0])
+			{
+				int a = 0;
+			}
+
+
+			if(iterOutsideDataTemp1->second.abExternalSide[1] == iterOutsideDataTemp2->second.abExternalSide[1])
+			{
+				int a = 0;
+			}
+
+			if(iterOutsideDataTemp1->second.abExternalSide[2] == iterOutsideDataTemp2->second.abExternalSide[2])
+			{
+				int a = 0;
+			}
+
+
+			if(iterOutsideDataTemp1->second.abExternalSide[3] == iterOutsideDataTemp2->second.abExternalSide[3])
+			{
+				int a = 0;
+			}
+
+			if(iterOutsideDataTemp1->second.abExternalSide[4] == iterOutsideDataTemp2->second.abExternalSide[4])
+			{
+				int a = 0;
+			}
+
+
+			if(iterOutsideDataTemp1->second.abExternalSide[5] == iterOutsideDataTemp2->second.abExternalSide[5])
+			{
+				int a = 0;
+			}
+
+
 		}
 		else
 		{
@@ -5829,7 +5933,14 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 		}
 	}
 
-	SendMessage(WM_FINISH_SIM_ONE_STEP_MSG,m_bStopCalc,0);
+	m_nCalcTotalCnt = g_MapOutsideData.size();
+	
+	//mapOutsideDataTemp.size() - g_MapOutsideData.size();
+
+	m_nCalcTryCnt++;
+
+	m_bStopCalc = TRUE;
+	SendMessage(WM_FINISH_SIM_ONE_STEP_MSG,m_bStopCalc,999);
 
 
 	int a = 0;
@@ -6174,9 +6285,6 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonSolidData3()
 	M_A_DELETE(pstPrarticlePos);
 	M_A_DELETE(pstPrarticlePosMask);
 	
-	m_bStopCalc = TRUE;
-	SendMessage(WM_FINISH_SIM_ONE_STEP_MSG, m_bStopCalc,0);
-
 
 
 
