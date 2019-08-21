@@ -429,8 +429,8 @@ __device__ void InputMaskDataToSharedMemValue(ST_PARTICLE_POS_CUDA	*pstPrarticle
 
 
 
-__global__ void kernelCalcRocking(int nThreadCnt, 
-								  int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCudaMask, 
+__global__ void kernelCalcRocking(int nStep, 
+								  int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda/*, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCudaMask*/, 
 								  int nXFileVoxCnt, int nYFileVoxCnt, int nZFileVoxCnt,
 								  float fCoefficient, float fTopRate, float fSideRate, float fBottomRate,
 								  float fCalcWaterInnerAbsorption, float fCalcLayerWaterAborption, float fCalcWaterChange
@@ -440,7 +440,7 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 
 	 // 수많은 스레드가 동시에 처리한다. // 따라서 threadIdx(스레드 인덱스)를 통해서 스레드들을 구별한다. 
 	//int tid = blockIdx.x * blockDim.x+ threadIdx.x;	
-	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	int tid = blockIdx.x * blockDim.x + threadIdx.x + nStep;
 
 	//if(tid > nPrarticlePosCntCuda)
 	//	return;
@@ -450,13 +450,15 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 	//int nExternalSideIdx = threadIdx.x % 6;
     //printf( "x:%d\n", nPrarticlePosCntCuda);
 
+	printf("Max(%d)\ttid : %d\n", nPrarticlePosCntCuda, tid);
+
 	if(tid >= nPrarticlePosCntCuda)
 		return;
 
 	if(pstPrarticlePosCuda[tid].sStoneType == -1)
 		return;
 
-	//printf("tid : %d\n", tid);
+	
 
 	//extern __shared__ ST_PARTICLE_POS_UNIT_PROCESS			astParticle_pos_unitProcess[]; //->0:본인, 1:상,2:하,3:좌,4:우,5:앞,6뒤
 	//__shared__ ST_PARTICLE_POS_UNIT_PROCESS			astParticle_pos_unitProcess[32 * 7]; //->0:본인, 1:상,2:하,3:좌,4:우,5:앞,6뒤
@@ -780,10 +782,11 @@ __global__ void kernelCalcRocking(int nThreadCnt,
 } 
 
 
-__global__ void kernelCalcRockingMasking(int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCudaMask)
+__global__ void kernelCalcRockingMasking(int nStep, 
+										 int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda/*, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCudaMask*/)
 { 
 	// 수많은 스레드가 동시에 처리한다. // 따라서 threadIdx(스레드 인덱스)를 통해서 스레드들을 구별한다. 
-	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	int tid = blockIdx.x * blockDim.x + threadIdx.x + nStep;
 
 	if(tid >= nPrarticlePosCntCuda)
 		return;
@@ -826,11 +829,12 @@ __global__ void kernelCalcRockingMasking(int nPrarticlePosCntCuda, ST_PARTICLE_P
 
 }
 
-__global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda
+__global__ void kernelReCalcExternalSide(int nStep, 
+										 int nPrarticlePosCntCuda, ST_PARTICLE_POS_CUDA	*pstPrarticlePosCuda
 										 ,int nXFileVoxCnt, int nYFileVoxCnt)
 { 
 	// 수많은 스레드가 동시에 처리한다. // 따라서 threadIdx(스레드 인덱스)를 통해서 스레드들을 구별한다. 
-	int tid = blockIdx.x * blockDim.x + threadIdx.x;
+	int tid = blockIdx.x * blockDim.x + threadIdx.x + nStep;
 
 	if(tid >= nPrarticlePosCntCuda)
 		return;
@@ -921,15 +925,15 @@ __global__ void kernelReCalcExternalSide(int nPrarticlePosCntCuda, ST_PARTICLE_P
 			pstPrarticlePosCuda[tid].fHaveWater = 0.0;
 		}
 
-		printf("%3d\t%3d\t%3d\t%d%d%d%d%d%d\t%d\tTid-%d\n", pstPrarticlePosCuda[tid].x, pstPrarticlePosCuda[tid].y, pstPrarticlePosCuda[tid].z,
-		pstPrarticlePosCuda[tid].abExternalSide[0],
-		pstPrarticlePosCuda[tid].abExternalSide[1],
-		pstPrarticlePosCuda[tid].abExternalSide[2],
-		pstPrarticlePosCuda[tid].abExternalSide[3],
-		pstPrarticlePosCuda[tid].abExternalSide[4],
-		pstPrarticlePosCuda[tid].abExternalSide[5],
-		pstPrarticlePosCuda[tid].sStoneType,
-		tid);
+		//printf("%3d\t%3d\t%3d\t%d%d%d%d%d%d\t%d\tTid-%d\n", pstPrarticlePosCuda[tid].x, pstPrarticlePosCuda[tid].y, pstPrarticlePosCuda[tid].z,
+		//pstPrarticlePosCuda[tid].abExternalSide[0],
+		//pstPrarticlePosCuda[tid].abExternalSide[1],
+		//pstPrarticlePosCuda[tid].abExternalSide[2],
+		//pstPrarticlePosCuda[tid].abExternalSide[3],
+		//pstPrarticlePosCuda[tid].abExternalSide[4],
+		//pstPrarticlePosCuda[tid].abExternalSide[5],
+		//pstPrarticlePosCuda[tid].sStoneType,
+		//tid);
 
 	}
 	else
@@ -952,7 +956,7 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nRepeatCnt, int nPrarticlePo
 {
 	//! 복셀 정보
 	ST_PARTICLE_POS_CUDA *pstPrarticlePosCuda;
-	ST_PARTICLE_POS_CUDA *pstPrarticlePosCudaMask;
+	//ST_PARTICLE_POS_CUDA *pstPrarticlePosCudaMask;
 	//! 복셀 개수
 	//int *pnPrarticlePosCntCuda;
 
@@ -965,10 +969,10 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nRepeatCnt, int nPrarticlePo
 	
 
 
-	if ( cudaSuccess != cudaMalloc(&pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt))
-	{
-		printf( "Error! Malloc \n" );
-	}
+	//if ( cudaSuccess != cudaMalloc(&pstPrarticlePosCudaMask, nSizeCnt*nPrarticlePosCnt))
+	//{
+	//	printf( "Error! Malloc \n" );
+	//}
 
 
 	/*if ( cudaSuccess != cudaMemset(pstPrarticlePosCudaMask, NULL, nSizeCnt*nPrarticlePosCnt))
@@ -1008,43 +1012,52 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nRepeatCnt, int nPrarticlePo
 	//int nSharedMemoryCnt = lcm(nThreadCnt, 6); //92
 	int nBlockCnt = (nPrarticlePosCnt / nThreadCnt) + 1;
 	//kernelCalcRocking<<<nBlockCnt, nThreadCnt, nThreadCnt * 7>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, m_fCalcWaterInnerAbsorption, m_fCalcLayerWaterAborption, m_fCalcWaterChange);
-	int nBlockStep = 256;
+	//int nBlockStep = 256;
+	int nBlockStep = 4;
 	
 	for(int a = 0; a< nRepeatCnt; a++)
 	{
+		int nStep = 0;
 		for(int n = 0; n < nBlockCnt; n += nBlockStep)
 		{
 			int nBlockStepTemp = nBlockStep;	
 			if(nBlockCnt - n < nBlockStep)
 				nBlockStepTemp = nBlockCnt - n;
-			kernelCalcRocking<<<nBlockStepTemp, nThreadCnt>>>(nThreadCnt, nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask, 
+			kernelCalcRocking<<<nBlockStepTemp, nThreadCnt>>>(nStep, nPrarticlePosCnt, pstPrarticlePosCuda/*, pstPrarticlePosCudaMask*/, 
 				m_nXFileVoxCnt, m_nYFileVoxCnt, m_nZFileVoxCnt, 
 				m_fCoefficient, m_fTopRate, m_fSideRate, m_fBottomRate, 
 				m_fCalcWaterInnerAbsorption, 
-				m_fCalcLayerWaterAborption, m_fCalcWaterChange);		
-		}
-		
-		
-		
-		//nBlockStep = 256;
-		for(int n = 0; n < nBlockCnt; n += nBlockStep)
-		{
-			int nBlockStepTemp = nBlockStep;	
-			if(nBlockCnt - n < nBlockStep)
-				nBlockStepTemp = nBlockCnt - n;
-			
-			kernelCalcRockingMasking<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, pstPrarticlePosCudaMask);
-		}
+				m_fCalcLayerWaterAborption, m_fCalcWaterChange);	
 
-		for(int n = 0; n < nBlockCnt; n += nBlockStep)
-		{
-			int nBlockStepTemp = nBlockStep;	
-			if(nBlockCnt - n < nBlockStep)
-				nBlockStepTemp = nBlockCnt - n;
-			
-			kernelReCalcExternalSide<<<nBlockStepTemp, nThreadCnt>>>(nPrarticlePosCnt, pstPrarticlePosCuda, m_nXFileVoxCnt, m_nYFileVoxCnt);
+			nStep += nBlockStepTemp * nThreadCnt;
 		}
+		
+		
+		
+		//nStep = 0;
+		//for(int n = 0; n < nBlockCnt; n += nBlockStep)
+		//{
+		//	int nBlockStepTemp = nBlockStep;	
+		//	if(nBlockCnt - n < nBlockStep)
+		//		nBlockStepTemp = nBlockCnt - n;
+		//	
+		//	kernelCalcRockingMasking<<<nBlockStepTemp, nThreadCnt>>>(nStep, nPrarticlePosCnt, pstPrarticlePosCuda/*, pstPrarticlePosCudaMask*/);
+		//	nStep += nBlockStepTemp * nThreadCnt;
+		//}
 
+		//nStep = 0;
+		//for(int n = 0; n < nBlockCnt; n += nBlockStep)
+		//{
+		//	int nBlockStepTemp = nBlockStep;	
+		//	if(nBlockCnt - n < nBlockStep)
+		//		nBlockStepTemp = nBlockCnt - n;
+		//	
+		//	kernelReCalcExternalSide<<<nBlockStepTemp, nThreadCnt>>>(nStep, nPrarticlePosCnt, pstPrarticlePosCuda, m_nXFileVoxCnt, m_nYFileVoxCnt);
+		//	nStep += nBlockStepTemp * nThreadCnt;
+		//}
+
+
+		//Sleep(100);
 	}
 		
 
@@ -1072,7 +1085,7 @@ void CGPUCalcRockAgingInner::SetInnderVoxelData(int nRepeatCnt, int nPrarticlePo
 	//cudaDeviceSynchronize();
 
 	cudaFree(pstPrarticlePosCuda);
-	cudaFree(pstPrarticlePosCudaMask);
+	//cudaFree(pstPrarticlePosCudaMask);
 	//cudaFree(pnPrarticlePosCntCuda);
 
 	//pstPrarticlePosMask[0].x = 1;
