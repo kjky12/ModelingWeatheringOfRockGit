@@ -5771,6 +5771,8 @@ void CModelingWeatheringOfRockDlg::CalcRockingGpu(int nRepeatCnt)
 					pstPrarticlePos[nSeekSize].y = nY;
 					pstPrarticlePos[nSeekSize].z = nZ;
 
+					pstPrarticlePos[nSeekSize].bCheck = false;
+
 					pstPrarticlePos[nSeekSize].fPorosity = iterOutsideData->second.fPorosity;
 
 					pstPrarticlePos[nSeekSize].abExternalSide[0] = iterOutsideData->second.abExternalSide[0];
@@ -5841,6 +5843,12 @@ void CModelingWeatheringOfRockDlg::CalcRockingGpu(int nRepeatCnt)
 // 		stParticlePos.x = x;
 // 		stParticlePos.y = y;
 // 		stParticlePos.z = z;
+		
+
+		if(stPrarticlePosMask.bCheck == false)
+		{
+			int k= 0;
+		}
 
 
 

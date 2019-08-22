@@ -119,6 +119,8 @@ typedef	struct	 ST_PARTICLE_POS		//	입자 위치 구조체
 
 typedef	struct	 ST_PARTICLE_POS_CUDA		//	입자 위치 구조체 CUDA전용
 {
+	bool bCheck;
+
 	int x;
 	int y;
 	int z;
@@ -139,7 +141,10 @@ typedef	struct	 ST_PARTICLE_POS_CUDA		//	입자 위치 구조체 CUDA전용
 
 	short			sLayerIdx;					//! 레이어 정보(0: 가장 외부 -> 숫자가 클수록 표면 정해야할듯)
 	
-
+	ST_PARTICLE_POS_CUDA()
+	{
+		bCheck = false;
+	}
 
 }ST_PARTICLE_POS_CUDA;
 

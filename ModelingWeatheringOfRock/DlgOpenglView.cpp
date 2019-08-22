@@ -757,11 +757,11 @@ int CDlgOpenglView::DrawFileColor()
 		{
 			stParticlePos = iterOutsideData->second;
 
-//  			if(stParticlePos.iExternalSideCnt <= 0)
-//  				continue;
+ 			if(stParticlePos.iExternalSideCnt <= 0)
+ 				continue;
 
-			if(stParticlePos.bInOut == false)
-				continue;
+// 			if(stParticlePos.bInOut == false)
+//				continue;
 
 
 			//if(VecZBaseRockParticle[stParticlePos.z][stParticlePos.y][stParticlePos.x].bUse)
