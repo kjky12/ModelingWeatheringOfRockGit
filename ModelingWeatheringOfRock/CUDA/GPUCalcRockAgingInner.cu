@@ -856,9 +856,9 @@ __global__ void kernelCalcRockingMasking(int nStep,
 	//	pstPrarticlePosCuda[tid].sStoneType = -1;
 	//}
 
-	if(/*pstPrarticlePosCuda[tid].sStoneType != 0 &&*/ pstPrarticlePosCuda[tid].sStoneType != -1 )
+	if(pstPrarticlePosCuda[tid].sStoneType != 0 )
 	{
-		if(pstPrarticlePosCuda[tid].fPorosity > pstPrarticlePosCuda[tid].fGranularDisintegration ) // 입상붕괴 도달값에 도달하여 제거
+		if(pstPrarticlePosCuda[tid].fPorosity >= pstPrarticlePosCuda[tid].fGranularDisintegration ) // 입상붕괴 도달값에 도달하여 제거
 		{
 			pstPrarticlePosCuda[tid].sStoneType = -2;
 		}
