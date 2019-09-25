@@ -141,9 +141,14 @@ typedef	struct	 ST_PARTICLE_POS_CUDA		//	입자 위치 구조체 CUDA전용
 
 	short			sLayerIdx;					//! 레이어 정보(0: 가장 외부 -> 숫자가 클수록 표면 정해야할듯)
 	
+
+	bool			abEffectPorosity[2];			// 공극률에 영향이 있는지 확인.. [0:외부 1:내부] -> 외부, 내부 어디서 영향 미쳣는지 확인
+
+
 	ST_PARTICLE_POS_CUDA()
 	{
 		bCheck = false;
+		memset(abEffectPorosity, false, 2);
 	}
 
 }ST_PARTICLE_POS_CUDA;

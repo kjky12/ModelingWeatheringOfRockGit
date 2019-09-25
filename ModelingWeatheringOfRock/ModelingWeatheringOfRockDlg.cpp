@@ -1267,7 +1267,7 @@ void ThreadCalcExternalSide( void* pArguments )
 		if(iterOutsideData->second.sStoneType == 0)
 			iterOutsideData->second.fHaveWater = 0.0;
 		else
-			iterOutsideData->second.fHaveWater = -1.0;
+			iterOutsideData->second.fHaveWater = 0.0;
 
 		//////////////////////////////////////////////////////////////////////////
 		//! 입자 종류 카운트
@@ -2798,7 +2798,7 @@ void CModelingWeatheringOfRockDlg::ReCalcExternalSide(int x,int y,int z, map<CSt
 				if(stParticlePos.sStoneType == 0)
 					stParticlePos.fHaveWater = iterOutsideDataDel->second.fHaveWater;
 				else
-					stParticlePos.fHaveWater = -1.0; //! 공극에만 의미가 있기때문
+					stParticlePos.fHaveWater = 0.0; //! 공극에만 의미가 있기때문
 
 			}
 			else
