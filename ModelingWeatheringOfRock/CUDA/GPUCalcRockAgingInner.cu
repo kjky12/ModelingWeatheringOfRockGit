@@ -192,7 +192,7 @@ __global__ void kernelCalcRocking(int nStep,
 			 +  (pstPrarticlePosCuda[tid].abExternalSide[4] * fCoefficient * fSideRate)
 			 +  (pstPrarticlePosCuda[tid].abExternalSide[5] * fCoefficient * fSideRate);
 		
-		 pstPrarticlePosCuda[tid].abEffectPorosity[0] = pstPrarticlePosCuda[tid].abExternalSide[0] || pstPrarticlePosCuda[tid].abExternalSide[1] || pstPrarticlePosCuda[tid].abExternalSide[2] || pstPrarticlePosCuda[tid].abExternalSide[3] || pstPrarticlePosCuda[tid].abExternalSide[4] || pstPrarticlePosCuda[tid].abExternalSide[5];
+		 //pstPrarticlePosCuda[tid].abEffectPorosity[0] = pstPrarticlePosCuda[tid].abExternalSide[0] || pstPrarticlePosCuda[tid].abExternalSide[1] || pstPrarticlePosCuda[tid].abExternalSide[2] || pstPrarticlePosCuda[tid].abExternalSide[3] || pstPrarticlePosCuda[tid].abExternalSide[4] || pstPrarticlePosCuda[tid].abExternalSide[5];
 
 		 
 	//printf("Side: %d\t%d\t%d\t%d\t%d\t%d\tTid:%d\n",
@@ -232,8 +232,8 @@ __global__ void kernelCalcRocking(int nStep,
 			if(fHaveWaterTemp < 0.0)
 				fHaveWaterTemp = 0.0;
 
-			//! 마스킹용 수분
-			astParticle_pos_unitProcess[nThreaIdxSharedMem].fHaveWater += fHaveWaterTemp;
+			
+			//astParticle_pos_unitProcess[nThreaIdxSharedMem].fHaveWater += fHaveWaterTemp;
 
 			
 
@@ -279,150 +279,153 @@ __global__ void kernelCalcRocking(int nStep,
 				//astParticle_pos_unitProcess[nThreaIdxSharedMem + 6].fHaveWater = 1.0;
 				astParticle_pos_unitProcess[nThreaIdxSharedMem + 6].fPorosity += (fCalcWaterChange / 5.0);
 
-				pstPrarticlePosCuda[tid].abEffectPorosity[1] = true;
+				//pstPrarticlePosCuda[tid].abEffectPorosity[1] = true;
 			}
 			
-			//int nChangeCnt = 1;
-			//int nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 1].fPorosity >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			nChangeCnt += 1;
-			//	}
-			//}
-			//
+			int nChangeCnt = 1;
+			int nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 1].fPorosity >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						nChangeCnt += 1;
+				}
+			}
+			
 
-			//nIdx = tid - (nXFileVoxCnt * nYFileVoxCnt);
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 2].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			nChangeCnt += 1;
-			//	}
-			//}
-			//
+			nIdx = tid - (nXFileVoxCnt * nYFileVoxCnt);
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 2].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						nChangeCnt += 1;
+				}
+			}
+			
 
-			//nIdx = tid - nXFileVoxCnt;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 3].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			nChangeCnt += 1;
-			//	}
+			nIdx = tid - nXFileVoxCnt;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 3].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						nChangeCnt += 1;
+				}
 
-			//}
-
-
-			//nIdx = tid + nXFileVoxCnt;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 4].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			nChangeCnt += 1;
-			//	}
-			//}
-			//
-
-			//nIdx = tid - 1;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 5].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			nChangeCnt += 1;
-			//	}
-			//}
-			//
-			//nIdx = tid + 1;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 6].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			nChangeCnt += 1;
-			//	}
-			//}
-
-			////////////////////////////
-			////! 카운팅 된거를 수분 함수율을 입상붕괴가 일어난 복셀에대해서 나눠서 넣어줌
-			//nIdx = tid;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		astParticle_pos_unitProcess[nThreaIdxSharedMem].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater / nChangeCnt;
-			//	}
-			//}
-
-			//nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 1].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			astParticle_pos_unitProcess[nThreaIdxSharedMem + 1].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater / nChangeCnt;
-			//	}
-			//}
-			//
-
-			//nIdx = tid - (nXFileVoxCnt * nYFileVoxCnt);
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 2].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			astParticle_pos_unitProcess[nThreaIdxSharedMem + 2].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater / nChangeCnt;
-			//	}
-			//}
-			//
-
-			//nIdx = tid - nXFileVoxCnt;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 3].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			astParticle_pos_unitProcess[nThreaIdxSharedMem + 3].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater / nChangeCnt;
-			//	}
-
-			//}
+			}
 
 
-			//nIdx = tid + nXFileVoxCnt;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 4].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			astParticle_pos_unitProcess[nThreaIdxSharedMem + 4].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater / nChangeCnt;
-			//	}
-			//}
-			//
+			nIdx = tid + nXFileVoxCnt;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 4].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						nChangeCnt += 1;
+				}
+			}
+			
 
-			//nIdx = tid - 1;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 5].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			astParticle_pos_unitProcess[nThreaIdxSharedMem + 5].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater / nChangeCnt;
-			//	}
-			//}
-			//
-			//nIdx = tid + 1;
-			//if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
-			//{
-			//	if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
-			//	{
-			//		if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 6].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
-			//			astParticle_pos_unitProcess[nThreaIdxSharedMem + 6].fHaveWater = pstPrarticlePosCuda[tid].fHaveWater / nChangeCnt;
-			//	}
-			//}
+			nIdx = tid - 1;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 5].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						nChangeCnt += 1;
+				}
+			}
+			
+			nIdx = tid + 1;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 6].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						nChangeCnt += 1;
+				}
+			}
+
+			//////////////////////////
+			//! 카운팅 된거를 수분 함수율을 입상붕괴가 일어난 복셀에대해서 나눠서 넣어줌
+
+			float fPlusWater = (pstPrarticlePosCuda[tid].fHaveWater  + fHaveWaterTemp) / nChangeCnt;
+
+			nIdx = tid;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					astParticle_pos_unitProcess[nThreaIdxSharedMem].fHaveWater = fPlusWater;
+				}
+			}
+
+			nIdx = tid + (nXFileVoxCnt * nYFileVoxCnt);
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 1].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						astParticle_pos_unitProcess[nThreaIdxSharedMem + 1].fHaveWater = fPlusWater;
+				}
+			}
+			
+
+			nIdx = tid - (nXFileVoxCnt * nYFileVoxCnt);
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 2].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						astParticle_pos_unitProcess[nThreaIdxSharedMem + 2].fHaveWater = fPlusWater;
+				}
+			}
+			
+
+			nIdx = tid - nXFileVoxCnt;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 3].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						astParticle_pos_unitProcess[nThreaIdxSharedMem + 3].fHaveWater = fPlusWater;
+				}
+
+			}
+
+
+			nIdx = tid + nXFileVoxCnt;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 4].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						astParticle_pos_unitProcess[nThreaIdxSharedMem + 4].fHaveWater = fPlusWater;
+				}
+			}
+			
+
+			nIdx = tid - 1;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 5].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						astParticle_pos_unitProcess[nThreaIdxSharedMem + 5].fHaveWater = fPlusWater;
+				}
+			}
+			
+			nIdx = tid + 1;
+			if(nIdx <= nPrarticlePosCntCuda && nIdx >= 0)
+			{
+				if(pstPrarticlePosCuda[nIdx].sStoneType != -1)
+				{
+					if(pstPrarticlePosCuda[nIdx].fPorosity + astParticle_pos_unitProcess[nThreaIdxSharedMem + 6].fPorosity  >= pstPrarticlePosCuda[nIdx].fGranularDisintegration)
+						astParticle_pos_unitProcess[nThreaIdxSharedMem + 6].fHaveWater = fPlusWater;
+				}
+			}
 
 			//printf("tid:%d(%d)->%f\n", tid, nChangeCnt, pstPrarticlePosCuda[tid].fHaveWater / (nChangeCnt + 1));
 		}
@@ -583,9 +586,6 @@ __global__ void kernelCalcRockingMasking(int nStep,
 
 		if(pstPrarticlePosCuda[tid].fPorosity >= pstPrarticlePosCuda[tid].fGranularDisintegration ) // 입상붕괴 도달값에 도달하여 제거
 		{
-			printf("%d/%d StonType:%d\tPrositiy : %f\tWater : %f[tid]\n", pstPrarticlePosCuda[tid].abEffectPorosity[0], pstPrarticlePosCuda[tid].abEffectPorosity[1],
-			pstPrarticlePosCuda[tid].sStoneType
-			, pstPrarticlePosCuda[tid].fPorosity, pstPrarticlePosCuda[tid].fHaveWater, tid);
 
 			
 			//if(pstPrarticlePosCudaMask[tid].fHaveWater > 0.0)
@@ -638,6 +638,11 @@ __global__ void kernelCalcRockingMasking(int nStep,
 				
 			}
 				
+
+			//printf("%d/%d StonType:%d\tPrositiy : %f\tWater : %f[tid]\n", pstPrarticlePosCuda[tid].abEffectPorosity[0], pstPrarticlePosCuda[tid].abEffectPorosity[1],
+			//pstPrarticlePosCuda[tid].sStoneType
+			//, pstPrarticlePosCuda[tid].fPorosity, pstPrarticlePosCuda[tid].fHaveWater, tid);
+
 
 				//if(pstPrarticlePosCuda[tid].sStoneType == -2) //-2 입상붕괴가 일어난 거긴 때문에 -> 공극 또는 외부 없는 입자로 변경해줘야한다
 				//{
@@ -708,7 +713,7 @@ __global__ void kernelReCalcExternalSide(int nStep,
 
 
 	//pstPrarticlePosCuda[tid].abExternalSide[0];
-	//memset(pstPrarticlePosCuda[tid].abExternalSide, false, sizeof(bool) * 6);
+	memset(pstPrarticlePosCuda[tid].abExternalSide, false, sizeof(bool) * 6);
 	
 
 	//printf("tid : %d\n", tid);
@@ -722,10 +727,6 @@ __global__ void kernelReCalcExternalSide(int nStep,
 		if(pstPrarticlePosCuda[nIdx].sStoneType == -1)
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[0] = true;
-		}
-		else
-		{
-			pstPrarticlePosCuda[tid].abExternalSide[0] = false;
 		}
 	}
 	
@@ -741,10 +742,6 @@ __global__ void kernelReCalcExternalSide(int nStep,
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[1] = true;
 		}
-		else
-		{
-			pstPrarticlePosCuda[tid].abExternalSide[1] = false;
-		}
 	}
 
 	
@@ -757,10 +754,6 @@ __global__ void kernelReCalcExternalSide(int nStep,
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[2] = true;
 		}
-		else
-		{
-			pstPrarticlePosCuda[tid].abExternalSide[2] = false;
-		}
 	}
 
 	nIdx = tid + nXFileVoxCnt;
@@ -771,10 +764,6 @@ __global__ void kernelReCalcExternalSide(int nStep,
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[3] = true;
 		}
-		else
-		{
-			pstPrarticlePosCuda[tid].abExternalSide[3] = false;
-		}
 	}
 
 	nIdx = tid - 1;
@@ -783,10 +772,6 @@ __global__ void kernelReCalcExternalSide(int nStep,
 		if(pstPrarticlePosCuda[nIdx].sStoneType == -1)
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[4] = true;
-		}
-		else
-		{
-			pstPrarticlePosCuda[tid].abExternalSide[4] = false;
 		}
 	}
 	
@@ -797,21 +782,17 @@ __global__ void kernelReCalcExternalSide(int nStep,
 		{
 			pstPrarticlePosCuda[tid].abExternalSide[5] = true;
 		}
-		else
-		{
-			pstPrarticlePosCuda[tid].abExternalSide[5] = false;
-		}
 	}
 
 	
 
-	//if(pstPrarticlePosCuda[tid].sStoneType == 0 &&
-	//	(pstPrarticlePosCuda[tid].abExternalSide[0] || pstPrarticlePosCuda[tid].abExternalSide[1] ||
-	//			pstPrarticlePosCuda[tid].abExternalSide[2] || pstPrarticlePosCuda[tid].abExternalSide[3] ||
-	//			pstPrarticlePosCuda[tid].abExternalSide[4] || pstPrarticlePosCuda[tid].abExternalSide[5] )) //! 공극인데 외부와 닿아있으면 외부로 변경
-	//		{
-	//			pstPrarticlePosCuda[tid].sStoneType = -1;
-	//	}
+	if(pstPrarticlePosCuda[tid].sStoneType == 0 &&
+	(pstPrarticlePosCuda[tid].abExternalSide[0] || pstPrarticlePosCuda[tid].abExternalSide[1] ||
+			pstPrarticlePosCuda[tid].abExternalSide[2] || pstPrarticlePosCuda[tid].abExternalSide[3] ||
+			pstPrarticlePosCuda[tid].abExternalSide[4] || pstPrarticlePosCuda[tid].abExternalSide[5] )) //! 공극인데 외부와 닿아있으면 외부로 변경
+	{
+			pstPrarticlePosCuda[tid].sStoneType = -1;
+	}
 
 
 }
