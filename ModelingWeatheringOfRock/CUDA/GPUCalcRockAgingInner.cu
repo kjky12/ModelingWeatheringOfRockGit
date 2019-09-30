@@ -798,7 +798,7 @@ __global__ void kernelReCalcExternalSide(int nStep,
 }
 
 
-void CGPUCalcRockAgingInner::SetInnderVoxelData(int nRepeatCnt, int nPrarticlePosCnt, ST_PARTICLE_POS_CUDA	*pstPrarticlePos, ST_PARTICLE_POS_CUDA	*pstPrarticlePosMask)
+void CGPUCalcRockAgingInner::SetInnderVoxelData(int nRepeatCnt, int nPrarticlePosCnt, ST_PARTICLE_POS_CUDA	*pstPrarticlePos)
 {
 	//! º¹¼¿ Á¤º¸
 	ST_PARTICLE_POS_CUDA *pstPrarticlePosCuda;
