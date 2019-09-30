@@ -5741,11 +5741,8 @@ void CModelingWeatheringOfRockDlg::CalcRockingGpu(int nRepeatCnt)
 	mapOutsideDataTemp = g_MapOutsideData;
 
 	ST_PARTICLE_POS_CUDA	*pstPrarticlePos = NULL;
-	ST_PARTICLE_POS_CUDA	*pstPrarticlePosMask = NULL;
 	pstPrarticlePos = new ST_PARTICLE_POS_CUDA[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
-	pstPrarticlePosMask = new ST_PARTICLE_POS_CUDA[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
 	memset(pstPrarticlePos, NULL, sizeof(ST_PARTICLE_POS_CUDA) * m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-	memset(pstPrarticlePosMask, NULL, sizeof(ST_PARTICLE_POS_CUDA) * m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 
 	SetGpuData();
 
@@ -5814,7 +5811,7 @@ void CModelingWeatheringOfRockDlg::CalcRockingGpu(int nRepeatCnt)
 	strTemp.Format(L"GPU - CalcRockAging Start(%d)", m_nCalcTryCnt);
 	ShowTraceTime(strTemp);
 
-	m_GPUCalcRockAgingInner.SetInnderVoxelData(nRepeatCnt, nVoxelAllCnt, pstPrarticlePos, pstPrarticlePosMask);
+	m_GPUCalcRockAgingInner.SetInnderVoxelData(nRepeatCnt, nVoxelAllCnt, pstPrarticlePos);
 	
 	//std::copy(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin());
 	strTemp.Format(L"GPU - Calc Rocking End(%d)", nRepeatCnt);
@@ -5981,9 +5978,6 @@ void CModelingWeatheringOfRockDlg::CalcRockingGpu(int nRepeatCnt)
 
 
 	M_A_DELETE(pstPrarticlePos);
-	M_A_DELETE(pstPrarticlePosMask);
-	
-
 
 
 }
