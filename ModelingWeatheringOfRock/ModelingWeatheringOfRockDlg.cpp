@@ -794,7 +794,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCreateModelData()
 	g_MapOutsideData.clear();
 	m_mapInsertParticle.clear();
 	m_nCalcTotalCnt = 0;	// 계산 입자 개수
-	m_nCalcTryCnt = 1;		// 계산 횟수
+	m_nCalcTryCnt = 0;		// 계산 횟수
 
 	m_bTriangle = TRUE;
 
@@ -816,7 +816,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCreateModelData2()
 	g_MapOutsideData.clear();
 	m_mapInsertParticle.clear();
 	m_nCalcTotalCnt = 0;	// 계산 입자 개수
-	m_nCalcTryCnt = 1;		// 계산 횟수
+	m_nCalcTryCnt = 0;		// 계산 횟수
 
 	m_bTriangle = FALSE;
 
@@ -1849,7 +1849,7 @@ void CModelingWeatheringOfRockDlg::UpdateShowData(int nShow)
 void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcExternalSide()
 {
 	m_nCalcTotalCnt = 0;	// 계산 입자 개수
-	m_nCalcTryCnt = 1;		// 계산 횟수
+	m_nCalcTryCnt = 0;		// 계산 횟수
 
 	m_bTriangle = TRUE;
 	m_bStopCalc = FALSE;
@@ -1955,7 +1955,7 @@ LRESULT CModelingWeatheringOfRockDlg::OnCalcRockAgingMsg(WPARAM wParam, LPARAM l
 		//strTmp.Format(L"%d (%.02f%%)",(int)g_MapOutsideData.size(), (float)((float)g_MapOutsideData.size()/(float)m_nCalcTotalCnt) * 100.0);
 		m_editGrTotalCnt.SetWindowText(L"-");
 
-		strTmp.Format(L"%d",m_nCalcTryCnt);		
+		strTmp.Format(L"%d",m_nCalcTryCnt);	
 		m_editCalcTryCnt.SetWindowText(strTmp);
 
 
@@ -2060,18 +2060,18 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging()
  	{
 		m_EditStopSimulCnt.GetWindowTextW(strTemp);
 
-		CalcRockingGpu(_wtoi(strTemp) - m_nCalcTryCnt + 1);
+		CalcRockingGpu(_wtoi(strTemp) - m_nCalcTryCnt);
  	}
  	else//CPU
 	{
-		strTemp.Format(L"CPU - CalcRockAging Start(%d)", m_nCalcTryCnt);
-		ShowTraceTime(strTemp);
 
-// 		m_EditStopSimulCnt.GetWindowText(strTemp);
-// 		if(m_nCalcTryCnt > _wtoi(strInput) -1)
+
 
 		if(CalcRockAgingSetData())
 		{
+			strTemp.Format(L"CPU - CalcRockAging Start(%d)", m_nCalcTryCnt);
+			ShowTraceTime(strTemp);
+
 			_beginthread( ThreadCalcRockAging, 0, this);
 		}
 		else
@@ -4475,10 +4475,10 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 
 		//CreaetSoildVoxelData();
 
+		//  [9/30/2019 kjky12] 시뮬레이션을 해야되는경우만..
+		//PostMessage(WM_SIMULATION_VOXEL, m_nSimulIdx++, m_nSimulObjectIdx);
 
-		//! 시뮬레이션
-		PostMessage(WM_SIMULATION_VOXEL, m_nSimulIdx++, m_nSimulObjectIdx);
-
+		OnBnClickedButtonCalcExternalSide();
 
 
 	}
@@ -5814,7 +5814,7 @@ void CModelingWeatheringOfRockDlg::CalcRockingGpu(int nRepeatCnt)
 	m_GPUCalcRockAgingInner.SetInnderVoxelData(nRepeatCnt, nVoxelAllCnt, pstPrarticlePos);
 	
 	//std::copy(pstPrarticlePos, pstPrarticlePos + sizeof(ST_PARTICLE_POS) * g_MapOutsideData.size(), g_MapOutsideData.begin());
-	strTemp.Format(L"GPU - Calc Rocking End(%d)", nRepeatCnt);
+	strTemp.Format(L"GPU - Calc Rocking End(%d)", nRepeatCnt + m_nCalcTryCnt);
 	ShowTraceTime(strTemp, 1);
 
 
