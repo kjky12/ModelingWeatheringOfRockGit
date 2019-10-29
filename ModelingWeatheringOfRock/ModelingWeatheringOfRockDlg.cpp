@@ -346,6 +346,8 @@ BEGIN_MESSAGE_MAP(CModelingWeatheringOfRockDlg, CDialog)
 	
 	ON_BN_CLICKED(IDC_BUTTON5, &CModelingWeatheringOfRockDlg::OnBnClickedButton5)
 	ON_BN_CLICKED(IDC_BUTTON_OBJ_FILE_MODELING5, &CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5)
+	ON_BN_CLICKED(IDC_BUTTON6, &CModelingWeatheringOfRockDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_BUTTON7, &CModelingWeatheringOfRockDlg::OnBnClickedButton7)
 END_MESSAGE_MAP()
 
 
@@ -2205,18 +2207,18 @@ void ThreadCalcRockAging( void* pArguments )
 	//! 현재 데이터의 최대 레이어
 	short sMaxLayerIdx = -1;
 	//! 최대 레이어를 확인한다.
-	if(pParent->m_mapStoneLayerCnt.size() > 0)
-	{
-		map<int,int>::iterator	iterStoneLayerCnt = pParent->m_mapStoneLayerCnt.end();
-		for (iterStoneLayerCnt = pParent->m_mapStoneLayerCnt.begin() ; iterStoneLayerCnt != pParent->m_mapStoneLayerCnt.end(); iterStoneLayerCnt++)
-		{
-			if(iterStoneLayerCnt->second <= 0)
-				continue;
-
-			if(sMaxLayerIdx < iterStoneLayerCnt->first)
-				sMaxLayerIdx = iterStoneLayerCnt->first;
-		}
-	}
+// 	if(pParent->m_mapStoneLayerCnt.size() > 0)
+// 	{
+// 		map<int,int>::iterator	iterStoneLayerCnt = pParent->m_mapStoneLayerCnt.end();
+// 		for (iterStoneLayerCnt = pParent->m_mapStoneLayerCnt.begin() ; iterStoneLayerCnt != pParent->m_mapStoneLayerCnt.end(); iterStoneLayerCnt++)
+// 		{
+// 			if(iterStoneLayerCnt->second <= 0)
+// 				continue;
+// 
+// 			if(sMaxLayerIdx < iterStoneLayerCnt->first)
+// 				sMaxLayerIdx = iterStoneLayerCnt->first;
+// 		}
+// 	}
 	
 
 
@@ -2325,7 +2327,7 @@ void ThreadCalcRockAging( void* pArguments )
 					//! 수분 팽창
 					fCalcWaterChange;
 					//! 최대 레이어
-					sMaxLayerIdx;
+					//sMaxLayerIdx;
 
 					/*[2/11/2019 kjky12] 
 					1. 수분 흡수량 = 수분흡수율 - {(최대 레이어 Idx - 현제 레이어 Idx) * 레이어별 수분 차감률 * 수분흡수율 }
@@ -6014,12 +6016,62 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButton5()
 			stParticlePos = iterOutsideData->second;
 
 			fwrite(&stParticlePos, sizeof(ST_PARTICLE_POS), 1, p_Numfile); 
-
-
-
 		}
+
+
+		fwrite(&m_nXFileVoxCnt, sizeof(int), 1, p_Numfile); 
+		fwrite(&m_nYFileVoxCnt, sizeof(int), 1, p_Numfile); 
+		fwrite(&m_nZFileVoxCnt, sizeof(int), 1, p_Numfile); 
+
+
+		int nVoxelSize = g_vecVoxelTotal.size();
+		fwrite(&nVoxelSize, sizeof(int), 1, p_Numfile); 
+
+		
+		bool* pbImsi = new bool[nVoxelSize];
+
+		copy(g_vecVoxelTotal.begin(), g_vecVoxelTotal.end(), pbImsi);
+
+		fwrite(pbImsi, sizeof(bool) * nVoxelSize, 1, p_Numfile); 
+
+		M_A_DELETE(pbImsi);
+
+
+		//fwrite(&g_vecVoxelTotal.begin(), sizeof(bool) * g_vecVoxelTotal.size(), 1, p_Numfile); 
+
+
 		fclose(p_Numfile); 
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	//  [10/29/2019 kjky12] 복셀 유무 정보도 저장해야할듯
+// 	strFileName = L"";
+// 	strFileName.Format(L"M_%s_P_%d_S_%d.dat", strModel, g_nDivideCnt + 4, m_nCalcTryCnt);
+// 	strNumPath = strPath + strFileName;
+// 
+// 	FILE *p_Numfile = _wfopen(strNumPath, L"wb"); 
+// 
+// 	if(NULL != p_Numfile )
+// 	{ 
+// 
+// 		ST_PARTICLE_POS stParticlePos;
+// 		map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;
+// 		int nTotalCnt = g_MapOutsideData.size();
+// 		fwrite(&nTotalCnt, sizeof(int), 1, p_Numfile); 
+// 
+// 		for(iterOutsideData = g_MapOutsideData.begin() ; iterOutsideData != g_MapOutsideData.end() ; iterOutsideData++)
+// 		{
+// 			stParticlePos = iterOutsideData->second;
+// 
+// 			fwrite(&stParticlePos, sizeof(ST_PARTICLE_POS), 1, p_Numfile); 
+// 
+// 
+// 
+// 		}
+// 		fclose(p_Numfile); 
+// 	}
+
 
 }
 
@@ -6028,18 +6080,27 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5()
 {
 		//g_strFilePathName =L"";
 
-		CFileDialog FileDlg(TRUE, _T("dat"), NULL, OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_PATHMUSTEXIST, _T("dat File(*.dat)|*.dat||") );
-		if (FileDlg.DoModal() == IDOK )
-		{
-			//g_strFilePathName = FileDlg.GetPathName();
-		}
-		else
-		{
-			return;
-		}
+	CFileDialog FileDlg(TRUE, _T("dat"), NULL, OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_PATHMUSTEXIST, _T("dat File(*.dat)|*.dat||") );
+	if (FileDlg.DoModal() == IDOK )
+	{
+		//g_strFilePathName = FileDlg.GetPathName();
+	}
+	else
+	{
+		return;
+	}
 
-// 		if(g_strFilePathName.IsEmpty())
-// 			return;
+// 	if(g_strFilePathName.IsEmpty())
+// 		return;
+
+
+	srand((unsigned int)time(NULL));
+	InitStonRate();
+	InitEditValue();
+	SetProbDistributionValue();
+	InitStoneCnt();
+
+	g_vecVoxelTotal.clear();
 
 
 // 	CString strFileName = L"";
@@ -6054,11 +6115,11 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5()
 
 
 	g_MapOutsideData.clear();
+	int nTotalCnt = 0;
 	if(NULL != p_Numfile )
 	{ 
 		map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;
 
-		int nTotalCnt = 0;
 		fread(&nTotalCnt, sizeof(int), 1, p_Numfile); 
 
 		for(int n = 0 ; n < nTotalCnt ; n++)
@@ -6072,37 +6133,178 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5()
 
 			strProcessStatus.Format(L"Loading Progress : %.2f %%",float((float)n / (float)nTotalCnt) * 100.0);
 			m_editProcessStatus.SetWindowTextW(strProcessStatus);
+
+			map<int,int>::iterator	iterStoneCnt = m_mapStoneTypeCnt.find(stParticlePos.sStoneType);
+			if(iterStoneCnt != m_mapStoneTypeCnt.end())
+			{
+				iterStoneCnt->second++;
+			}
+
+			iterStoneCnt = m_mapStoneLayerCnt.find(stParticlePos.sLayerIdx);
+			if(iterStoneCnt != m_mapStoneLayerCnt.end())
+			{
+				iterStoneCnt->second++;
+			}
+
+
+
 		}
+
+		fread(&m_nXFileVoxCnt, sizeof(int), 1, p_Numfile); 
+		fread(&m_nYFileVoxCnt, sizeof(int), 1, p_Numfile); 
+		fread(&m_nZFileVoxCnt, sizeof(int), 1, p_Numfile); 
+
+
+		int nVoxelSize = 0;
+		fread(&nVoxelSize, sizeof(int), 1, p_Numfile); 
+		g_vecVoxelTotal.resize(nVoxelSize);
+
+		bool* pbImsi = new bool[nVoxelSize];
+
+		fread(pbImsi, sizeof(bool) * nVoxelSize, 1, p_Numfile); 
+
+
+		copy(pbImsi, pbImsi + nVoxelSize, g_vecVoxelTotal.begin());
+
+		M_A_DELETE(pbImsi);
+
+
 		fclose(p_Numfile); 
 	}
 
 	
 	//////////////////////////////////////////////////////////////////////////
 	//! 입자 종류 카운트
-	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;
-	int nTotalCnt = g_MapOutsideData.size();
-	fwrite(&nTotalCnt, sizeof(int), 1, p_Numfile); 
-
-	for(iterOutsideData = g_MapOutsideData.begin() ; iterOutsideData != g_MapOutsideData.end() ; iterOutsideData++)
-	{
-		map<int,int>::iterator	iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideData->second.sStoneType);
-		if(iterStoneCnt != m_mapStoneTypeCnt.end())
-			iterStoneCnt->second++;
-		else
-			m_mapStoneTypeCnt.insert(make_pair(iterOutsideData->second.sStoneType, 1));
-
-		m_nCalcTotalCnt++;
-		m_nSolidTotalCnt++; //GetTotalCntFromSolidFile();
-
-	}
-
-	CString strTmp = L"";
-	strTmp.Format(L"%d",m_nCalcTotalCnt);
-	m_editTotalSolidCnt.SetWindowTextW(strTmp);
+// 	map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;
+// 	int nTotalCnt = g_MapOutsideData.size();
+// 	fwrite(&nTotalCnt, sizeof(int), 1, p_Numfile); 
+// 
+// 	for(iterOutsideData = g_MapOutsideData.begin() ; iterOutsideData != g_MapOutsideData.end() ; iterOutsideData++)
+// 	{
+// 		map<int,int>::iterator	iterStoneCnt = m_mapStoneTypeCnt.find(iterOutsideData->second.sStoneType);
+// 		if(iterStoneCnt != m_mapStoneTypeCnt.end())
+// 			iterStoneCnt->second++;
+// 		else
+// 			m_mapStoneTypeCnt.insert(make_pair(iterOutsideData->second.sStoneType, 1));
+// 
+// 		m_nCalcTotalCnt++;
+// 		m_nSolidTotalCnt++; //GetTotalCntFromSolidFile();
+// 
+// 	}
+// 
+// 	CString strTmp = L"";
+// 	strTmp.Format(L"%d",m_nCalcTotalCnt);
+// 	m_editTotalSolidCnt.SetWindowTextW(strTmp);
 
 	m_editProcessStatus.SetWindowTextW(L"Load Finsh");
 
+	//////////////////////////////////////////////////////////////////////////
+	//  [10/29/2019 kjky12] 초기화
+	m_nCalcTotalCnt = nTotalCnt;
+	m_setDeleteParticle.clear();
+	m_nCalcTryCnt = 1;		// 계산 횟수
 
+	CString strTmp = L"";
+
+	strTmp.Format(L"%d",m_nCalcTotalCnt);
+	m_editTotalSolidCnt.SetWindowTextW(strTmp);
+
+	SetStoneTypeCntView();
+
+	//  [10/29/2019 kjky12] 임시...
+	OnBnClickedButton6();
+
+	SendMessage(WM_FINISH_SOLID_VOXEL_MSG,5,0);	
+
+
+
+
+}
+
+	vector<bool>											g_vecVoxelTotalT;
+	map<CString,ST_PARTICLE_POS>								g_MapOutsideDataT;
+	map<int,int>	m_mapStoneTypeCntT;
+	map<int,int>	m_mapStoneLayerCntT;
+
+	int m_nXFileVoxCntT;
+	int m_nYFileVoxCntT;
+	int m_nZFileVoxCntT;
+	int m_nCalcTotalCntT;
+	set<CString>		m_setDeleteParticleT;
+	int m_nCalcTryCntT;
+
+
+
+void CModelingWeatheringOfRockDlg::OnBnClickedButton6()
+{
+// 	srand((unsigned int)time(NULL));
+// 	InitStonRate();
+// 	InitEditValue();
+// 	SetProbDistributionValue();
+// 	InitStoneCnt();
+
+	g_vecVoxelTotalT = g_vecVoxelTotal;
+	g_MapOutsideDataT	= g_MapOutsideData;
+	m_mapStoneTypeCntT	= m_mapStoneTypeCnt;
+	m_mapStoneLayerCntT	= m_mapStoneLayerCnt;
+	m_nXFileVoxCntT		= m_nXFileVoxCnt;
+	m_nYFileVoxCntT		= m_nYFileVoxCnt;
+	m_nZFileVoxCntT		= m_nZFileVoxCnt;
+	m_nCalcTotalCntT		= m_nCalcTotalCnt;
+	
+
+	m_setDeleteParticleT.clear();
+	m_nCalcTryCntT = 1;		// 계산 횟수
+
+
+
+// 	m_editProcessStatus.SetWindowTextW(L"Load Finsh");
+// 
+// 
+// 	CString strTmp = L"";
+// 
+// 	strTmp.Format(L"%d",m_nCalcTotalCnt);
+// 	m_editTotalSolidCnt.SetWindowTextW(strTmp);
+// 
+// 	SetStoneTypeCntView();
+// 
+// 	SendMessage(WM_FINISH_SOLID_VOXEL_MSG,5,0);	
+}
+
+
+void CModelingWeatheringOfRockDlg::OnBnClickedButton7()
+{
+	srand((unsigned int)time(NULL));
+	InitStonRate();
+	InitEditValue();
+	SetProbDistributionValue();
+	InitStoneCnt();
+
+	g_vecVoxelTotal = g_vecVoxelTotalT;
+	g_MapOutsideData	= g_MapOutsideDataT;
+	m_mapStoneTypeCnt	= m_mapStoneTypeCntT;
+	m_mapStoneLayerCnt	= m_mapStoneLayerCntT;
+	m_nXFileVoxCnt		= m_nXFileVoxCntT;
+	m_nYFileVoxCnt		= m_nYFileVoxCntT;
+	m_nZFileVoxCnt		= m_nZFileVoxCntT;
+	m_nCalcTotalCnt		= m_nCalcTotalCntT;
+
+
+	m_setDeleteParticle.clear();
+	m_nCalcTryCnt = 1;		// 계산 횟수
+
+
+
+	m_editProcessStatus.SetWindowTextW(L"Load Finsh");
+	
+	
+	CString strTmp = L"";
+	
+	strTmp.Format(L"%d",m_nCalcTotalCnt);
+	m_editTotalSolidCnt.SetWindowTextW(strTmp);
+	
+	SetStoneTypeCntView();
+	
 	SendMessage(WM_FINISH_SOLID_VOXEL_MSG,5,0);	
 
 }
