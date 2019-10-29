@@ -215,6 +215,7 @@ public:
 	CEdit m_editCalcLayerWaterAborption;
 	//! 초기 공극률
 	CEdit m_editInitPorosity;
+	//  [10/24/2019 kjky12] 해당 입상붕괴 임계치는 입자별 입상붕괴 임계치를 사용함!
 	//! 입상붕괴 임계치
 	CEdit m_editGranularDisintegration;
 	//! 공극률 개수

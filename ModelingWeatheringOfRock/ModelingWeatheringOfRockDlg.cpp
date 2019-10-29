@@ -387,8 +387,10 @@ BOOL CModelingWeatheringOfRockDlg::OnInitDialog()
 	m_nComboProcessSel = dfDATA_PROCESS_MEMORY;
 
 
-	m_comboUseCuda.AddString(L"CPU肺流-CPU贸府");
-	m_comboUseCuda.AddString(L"GPU肺流-GPU贸府");
+// 	m_comboUseCuda.AddString(L"CPU肺流-CPU贸府");
+// 	m_comboUseCuda.AddString(L"GPU肺流-GPU贸府");
+	m_comboUseCuda.AddString(L"CPU");
+	m_comboUseCuda.AddString(L"GPU");
 	m_comboUseCuda.SetCurSel(dfLOGIC_CPU_CPU);
 	//m_comboUseCuda.SetCurSel(dfLOGIC_GPU_GPU);
 	m_nComboLogicProcess = m_comboUseCuda.GetCurSel();
