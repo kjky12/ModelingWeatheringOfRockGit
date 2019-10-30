@@ -348,6 +348,7 @@ BEGIN_MESSAGE_MAP(CModelingWeatheringOfRockDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_OBJ_FILE_MODELING5, &CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5)
 	ON_BN_CLICKED(IDC_BUTTON6, &CModelingWeatheringOfRockDlg::OnBnClickedButton6)
 	ON_BN_CLICKED(IDC_BUTTON7, &CModelingWeatheringOfRockDlg::OnBnClickedButton7)
+	ON_BN_CLICKED(IDC_BUTTON8, &CModelingWeatheringOfRockDlg::OnBnClickedButton8)
 END_MESSAGE_MAP()
 
 
@@ -6306,5 +6307,63 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButton7()
 	SetStoneTypeCntView();
 	
 	SendMessage(WM_FINISH_SOLID_VOXEL_MSG,5,0);	
+
+}
+
+void CModelingWeatheringOfRockDlg::RefreshMessage()
+{
+	MSG msg;
+	// 	DWORD dwStart;
+	// 	dwStart = GetTickCount();
+
+	//	while (GetTickCount() - dwStart < 3/*mseconds*/)
+	{
+		while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			::TranslateMessage(&msg);
+			::DispatchMessage(&msg);
+		}
+	}
+}
+
+
+
+void CModelingWeatheringOfRockDlg::OnBnClickedButton8()
+{
+	const int nCnt = 7;
+	int nSimul[nCnt] = {
+		1,
+		30,
+		60,
+		90,
+		120,
+		150,
+		180
+	};
+
+	CString strTemp = L"";
+	for (int i = 0 ; i < nCnt; i++)
+	{
+		//! ÃÊ±âÈ­
+		OnBnClickedButton7();
+
+		RefreshMessage();
+
+		strTemp.Format(L"%d", nSimul[i]);
+		m_EditStopSimulCnt.SetWindowTextW(strTemp);
+
+		strTemp.Format(L"%d Start", nSimul[i]);
+		m_editProcessStatus.SetWindowTextW(strTemp);
+
+		RefreshMessage();
+
+		OnBnClickedButtonCalcRockAging();
+
+
+		strTemp.Format(L"%d Finish", nSimul[i]);
+		m_editProcessStatus.SetWindowTextW(strTemp);
+
+		RefreshMessage();
+	}
 
 }
