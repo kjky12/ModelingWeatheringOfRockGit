@@ -136,6 +136,8 @@ void CDlgOpenglView::OnPaint()
 		glMatrixMode(GL_MODELVIEW);
 	}
 
+	//DrawGLSceneTEST();
+
 	if(g_n3DShowType == 0)
 		DrawFileGLScene();		// °è»ê¿ë
 	else if(g_n3DShowType == 1)
@@ -273,6 +275,120 @@ int CDlgOpenglView::DrawVoxelScene()
 	return TRUE;						// Keep Going
 }
 
+
+
+int CDlgOpenglView::DrawGLSceneTEST()
+{
+
+	glClearColor(1, 1, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();						// Reset The View
+
+
+
+	//	Set up some nice attributes for drawing the grid.
+	glPushAttrib(GL_LINE_BIT | GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT);
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_LIGHTING);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glLineWidth(1.5f);
+
+	//	Create the grid.
+
+	// 	glBegin(GL_LINES);
+	// 
+	// 	for (int i = -10; i <= 10; i++)
+	// 	{
+	// 		glColor4f(0.2f, 0.2f, 0.2f, 0.8f);
+	// 		glVertex3f((float)i, -10, 0 );
+	// 		glVertex3f((float)i, 10, 0 );
+	// 		glVertex3f(-10, (float)i, 0);
+	// 		glVertex3f(10, (float)i, 0);
+	// 	}
+	// 
+	// 	glEnd();
+	// 
+	//	Create the axies.
+
+
+	glRotatef(m_XRot,1.0f,0.0f,0.0f);
+	glRotatef(m_YRot,0.0f,1.0f,0.0f);
+	glRotatef(m_ZRot,0.0f,0.0f,1.0f);
+	glScalef(m_fScale,m_fScale,m_fScale);
+
+
+	glTranslatef(m_XTran,m_YTran,m_ZTran);
+
+	if(m_bViewAxis)
+	{
+		glBegin(GL_LINES);
+
+		glColor4f(1, 0, 0, 1);
+		glVertex3f(0, 0, 0);
+		glVertex3f(600, 0, 0);
+
+		glColor4f(0, 1, 0, 1);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 600, 0);
+
+		glColor4f(0, 0, 1, 1);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, 0, 600);
+
+		glEnd();
+	}
+
+	glTranslatef(-1.0 * g_nXVoxCnt/2.0,-1.0 * g_nYVoxCnt/2.0,-1.0 * g_nZVoxCnt/2.0);
+
+	if(!m_bComplete)
+	{
+		map<CString,ST_PARTICLE_POS>::iterator		iterOutsideData;
+		ST_PARTICLE_POS stParticlePos;
+		vector<vector<vector<ST_BASE_ROCK_PARTICLE>>>	VecZBaseRockParticle;
+
+		//float fColor = 0.0f;
+		int nRed = 0;int nGreen = 0;int nBlue = 0;
+
+		glNewList(10,GL_COMPILE_AND_EXECUTE);
+
+		glPushMatrix();
+		for(iterOutsideData = g_MapOutsideData.begin() ; iterOutsideData != g_MapOutsideData.end() ; iterOutsideData++)
+		{
+			stParticlePos = iterOutsideData->second;
+
+			// 			if(stParticlePos.iExternalSideCnt <= 0)
+			// 				continue;
+
+
+
+			//glTranslatef((stParticlePos.x - g_nXVoxCnt)/10.0f,(stParticlePos.y- g_nYVoxCnt)/10.0f,(stParticlePos.z- g_nZVoxCnt)/10.0f);			// Move Left And Into The Screen
+
+			gf_GetEfieldColor(stParticlePos.fPorosity,nRed,nGreen,nBlue);
+			glVertex3f((stParticlePos.x - g_nXVoxCnt)/10.0f,(stParticlePos.y- g_nYVoxCnt)/10.0f,(stParticlePos.z- g_nZVoxCnt)/10.0f);
+
+			glColor3f(float(nRed / 255.0),float(nGreen / 255.0),float(nBlue / 255.0));
+			//glutSolidCube (0.1);
+		}
+		glPopMatrix();
+
+		glEndList();
+
+		m_bComplete = TRUE;
+	}
+	else
+		glCallList(10);
+
+
+
+	glPopAttrib();
+	glFlush();
+
+	//	m_rtri+=5.0f;						// Increase The Rotation Variable For The Triangle 
+	//	m_rquad-=0.1f;						// Decrease The Rotation Variable For The Quad 
+	return TRUE;						// Keep Going
+}
 
 
 int CDlgOpenglView::DrawGLScene()

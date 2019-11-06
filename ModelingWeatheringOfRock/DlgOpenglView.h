@@ -18,6 +18,7 @@ public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	
 	int DrawGLScene();
+	int DrawGLSceneTEST();
 	int DrawVoxelScene();
 	int DrawFileGLScene();
 	int DrawFileExternScene();

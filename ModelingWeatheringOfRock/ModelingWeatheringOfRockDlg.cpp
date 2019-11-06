@@ -1884,6 +1884,8 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcExternalSide()
 	
 	strTmp.Format(L"%d",m_nCalcTotalCnt);
 	m_editTotalSolidCnt.SetWindowTextW(strTmp);
+
+	RefreshMessage();
 	
 	srand((unsigned int)time(NULL));
 	InitStonRate();
@@ -3660,21 +3662,26 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lPar
 	//! 메모리 처리
 	if(m_nComboProcessSel == dfDATA_PROCESS_MEMORY)
 	{
-		g_vecVoxelXState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-		g_vecVoxelYState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-		g_vecVoxelZState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-		g_vecVoxelTotal.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 
-		g_vecVoxelTotalCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-
-		for (int v= 0; v < dfTOTAL_COUNT; v++)
+		if(m_nComboLogicProcess == dfLOGIC_GPU_GPU) //GPU 전체 로직
 		{
-			M_A_DELETE(m_bDataTmp[v]);
-			m_bDataTmp[v] = new bool[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
-			memset(m_bDataTmp[v], NULL, m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-		}
-		
+			g_vecVoxelTotalCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 
+			for (int v= 0; v < dfTOTAL_COUNT; v++)
+			{
+				M_A_DELETE(m_bDataTmp[v]);
+				m_bDataTmp[v] = new bool[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
+				memset(m_bDataTmp[v], NULL, m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+			}
+		}
+		else
+		{
+			g_vecVoxelXState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+			g_vecVoxelYState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+			g_vecVoxelZState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+			g_vecVoxelTotal.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+
+		}
 	}
 	else
 	{
