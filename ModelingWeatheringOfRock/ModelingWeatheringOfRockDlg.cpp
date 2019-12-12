@@ -3662,26 +3662,41 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lPar
 	//! 메모리 처리
 	if(m_nComboProcessSel == dfDATA_PROCESS_MEMORY)
 	{
-
-		if(m_nComboLogicProcess == dfLOGIC_GPU_GPU) //GPU 전체 로직
+		for (int v= 0; v < dfTOTAL_COUNT; v++)
 		{
-			g_vecVoxelTotalCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-
-			for (int v= 0; v < dfTOTAL_COUNT; v++)
-			{
-				M_A_DELETE(m_bDataTmp[v]);
-				m_bDataTmp[v] = new bool[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
-				memset(m_bDataTmp[v], NULL, m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-			}
+			M_A_DELETE(m_bDataTmp[v]);
+			m_bDataTmp[v] = new bool[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
+			memset(m_bDataTmp[v], NULL, m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 		}
-		else
-		{
-			g_vecVoxelXState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-			g_vecVoxelYState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-			g_vecVoxelZState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
-			g_vecVoxelTotal.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
 
-		}
+		g_vecVoxelXState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+		g_vecVoxelYState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+		g_vecVoxelZState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+		g_vecVoxelTotalCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+		g_vecVoxelTotal.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+
+
+// 		if(m_nComboLogicProcess == dfLOGIC_GPU_GPU) //GPU 전체 로직
+// 		{
+// 			g_vecVoxelTotalCuda.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+// 			
+// 
+// 			for (int v= 0; v < dfTOTAL_COUNT; v++)
+// 			{
+// 				M_A_DELETE(m_bDataTmp[v]);
+// 				m_bDataTmp[v] = new bool[m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt];
+// 				memset(m_bDataTmp[v], NULL, m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+// 			}
+// 
+// 		}
+// 		else
+// 		{
+// 			g_vecVoxelXState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+// 			g_vecVoxelYState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+// 			g_vecVoxelZState.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+// 			g_vecVoxelTotal.resize(m_nXFileVoxCnt * m_nYFileVoxCnt * m_nZFileVoxCnt);
+// 
+// 		}
 	}
 	else
 	{
@@ -3760,56 +3775,56 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshVoxelMsg(WPARAM wParam, LPARAM lPar
 		// 		}
 
 
-		ShowTraceTime(L"GPU-GPU");
-		ShowTraceTime(L"Start Inner Voxel");
-
-		SetGpuData();
-
-		int nSizeT = g_vecVoxelState.size();
-		memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);
-		memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
-		copy(g_vecVoxelState.begin(), g_vecVoxelState.begin() + nSizeT, m_bDataTmp[dfVOXEL_IDX]);
-		ShowTraceTime(L"External Voxel CPU->GPU COPY" , 1);
-
-		ShowTraceTime(L"Start Inner Voxel -> Version 1");
-
-		memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
-		m_GPUSolid.CUDA_SolidVoxelizationXYZ(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
-		std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
-		
-		ShowTraceTime(L"End Inner Voxel -> Version 1" , 1);
-
-
-		Sleep(500);
-
-		ShowTraceTime(L"Start Inner Voxel -> Version 2");
-
-		memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
-		m_GPUSolid.CUDA_SolidVoxelizationXYZBlock(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
-		std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
-
-		ShowTraceTime(L"End Inner Voxel -> Version 2" , 1);
-
-		int nErrorCnt = 0;
-		for (int v = 0; v < g_vecVoxelTotalCuda.size(); v++)
-		{
-			//if(g_vecVoxelTotalCudaTemp[v] != g_vecVoxelTotalCuda[v])
-			if(g_vecVoxelTotalCuda[v] != g_vecVoxelTotal[v])
-			{
-				nErrorCnt++;
-			}
-		}
-		CString strTempT = L"";
-		if(nErrorCnt > 0)
-		{
-			strTempT.Format(L"Error Cnt : %d\n", nErrorCnt);
-		}
-		else
-		{
-			strTempT.Format(L"GOOD");
-		}
-		ShowTraceTime(strTempT);
-		ShowTraceTime(L"\n", 2);
+// 		ShowTraceTime(L"GPU-GPU");
+// 		ShowTraceTime(L"Start Inner Voxel");
+// 
+// 		SetGpuData();
+// 
+// 		int nSizeT = g_vecVoxelState.size();
+// 		memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);
+// 		memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
+// 		copy(g_vecVoxelState.begin(), g_vecVoxelState.begin() + nSizeT, m_bDataTmp[dfVOXEL_IDX]);
+// 		ShowTraceTime(L"External Voxel CPU->GPU COPY" , 1);
+// 
+// 		ShowTraceTime(L"Start Inner Voxel -> Version 1");
+// 
+// 		memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
+// 		m_GPUSolid.CUDA_SolidVoxelizationXYZ(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
+// 		std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
+// 		
+// 		ShowTraceTime(L"End Inner Voxel -> Version 1" , 1);
+// 
+// 
+// 		Sleep(500);
+// 
+// 		ShowTraceTime(L"Start Inner Voxel -> Version 2");
+// 
+// 		memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
+// 		m_GPUSolid.CUDA_SolidVoxelizationXYZBlock(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
+// 		std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
+// 
+// 		ShowTraceTime(L"End Inner Voxel -> Version 2" , 1);
+// 
+// 		int nErrorCnt = 0;
+// 		for (int v = 0; v < g_vecVoxelTotalCuda.size(); v++)
+// 		{
+// 			//if(g_vecVoxelTotalCudaTemp[v] != g_vecVoxelTotalCuda[v])
+// 			if(g_vecVoxelTotalCuda[v] != g_vecVoxelTotal[v])
+// 			{
+// 				nErrorCnt++;
+// 			}
+// 		}
+// 		CString strTempT = L"";
+// 		if(nErrorCnt > 0)
+// 		{
+// 			strTempT.Format(L"Error Cnt : %d\n", nErrorCnt);
+// 		}
+// 		else
+// 		{
+// 			strTempT.Format(L"GOOD");
+// 		}
+// 		ShowTraceTime(strTempT);
+// 		ShowTraceTime(L"\n", 2);
 
 
 		SendMessage(WM_FINISH_SOLID_VOXEL_MSG,3,0);
@@ -4426,29 +4441,29 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 		{
 			//////////////////////////////////////////////////////////////////////////
 			//! 시간 비교를 위함
-// 			ShowTraceTime(L"GPU-GPU");
-// 			ShowTraceTime(L"Start Inner Voxel");
-// 
-// 			SetGpuData();
-// 
-// 
-// 			int nSizeT = g_vecVoxelState.size();
-// 			memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);
-// 			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
-// 			copy(g_vecVoxelState.begin(), g_vecVoxelState.begin() + nSizeT, m_bDataTmp[dfVOXEL_IDX]);
+			ShowTraceTime(L"GPU-GPU");
+			ShowTraceTime(L"Start Inner Voxel");
+
+			SetGpuData();
+
+
+			int nSizeT = g_vecVoxelState.size();
+			memset(m_bDataTmp[dfVOXEL_IDX], NULL, nSizeT);
+			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
+			copy(g_vecVoxelState.begin(), g_vecVoxelState.begin() + nSizeT, m_bDataTmp[dfVOXEL_IDX]);
 // 			ShowTraceTime(L"External Voxel CPU->GPU COPY" , 1);
 // 
 // 			ShowTraceTime(L"Start Inner Voxel -> Version 1");
-// 
-// 			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
-// 			m_GPUSolid.CUDA_SolidVoxelizationXYZ(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
-// 			std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
-// 
-// 			ShowTraceTime(L"End Inner Voxel -> Version 1" , 1);
-// 
-// 
-// 			Sleep(500);
-// 
+
+			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
+			m_GPUSolid.CUDA_SolidVoxelizationXYZ(nSizeT, m_bDataTmp[dfVOXEL_IDX], m_bDataTmp[dfTOTAL_IDX]);
+			std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
+
+			ShowTraceTime(L"End Inner Voxel" , 1);
+
+
+			Sleep(500);
+
 // 			ShowTraceTime(L"Start Inner Voxel -> Version 2");
 // 
 // 			memset(m_bDataTmp[dfTOTAL_IDX], NULL, nSizeT);
@@ -4456,7 +4471,7 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 // 			std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+nSizeT, g_vecVoxelTotalCuda.begin());
 // 
 // 			ShowTraceTime(L"End Inner Voxel -> Version 2" , 1);
-// 			
+			
 // 			int nErrorCnt = 0;
 // 			for (int v = 0; v < g_vecVoxelTotalCuda.size(); v++)
 // 			{
@@ -4474,10 +4489,9 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 // 			{
 // 				strTempT.Format(L"GOOD");
 // 			}
-// 
-// 			ShowTraceTime(strTempT);
-// 
-// 			ShowTraceTime(L"\n", 2);
+//			ShowTraceTime(strTempT);
+
+			ShowTraceTime(L"\n", 2);
 
 		}
 
@@ -4488,9 +4502,9 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 		//CreaetSoildVoxelData();
 
 		//  [9/30/2019 kjky12] 시뮬레이션을 해야되는경우만..
-		//PostMessage(WM_SIMULATION_VOXEL, m_nSimulIdx++, m_nSimulObjectIdx);
+		PostMessage(WM_SIMULATION_VOXEL, m_nSimulIdx++, m_nSimulObjectIdx);
 
-		OnBnClickedButtonCalcExternalSide();
+		//OnBnClickedButtonCalcExternalSide();
 
 
 	}
@@ -5285,30 +5299,163 @@ LRESULT CModelingWeatheringOfRockDlg::OnSimulationMsg(WPARAM wParam, LPARAM lPar
 		return FALSE;
 	//g_strFilePathName;
 
-	const int nCntObject = 9;
+	const int nCntObject = 61;
 	const CString strPath[nCntObject] = {
 		gf_GetModulePath() + L"Model\\stone1.OBJ",
-		gf_GetModulePath() + L"Model\\stone2.OBJ",
+
 		gf_GetModulePath() + L"Model\\stone3.OBJ",
-		gf_GetModulePath() + L"Model\\stone4.OBJ",
-		gf_GetModulePath() + L"Model\\stone5.OBJ",
-		gf_GetModulePath() + L"Model\\spyder.OBJ",
-		gf_GetModulePath() + L"Model\\hand.OBJ",
-		gf_GetModulePath() + L"Model\\chessPhon.OBJ",
-		gf_GetModulePath() + L"Model\\body.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+		gf_GetModulePath() + L"Model\\stone3.OBJ",
+
 
 	};
 
-	const int nCnt = 7;
+//	const int nCntObject = 9;
+// 	const CString strPath[nCntObject] = {
+// 		gf_GetModulePath() + L"Model\\stone1.OBJ",
+// 		gf_GetModulePath() + L"Model\\stone2.OBJ",
+// 		gf_GetModulePath() + L"Model\\stone3.OBJ",
+// 		gf_GetModulePath() + L"Model\\stone4.OBJ",
+// 		gf_GetModulePath() + L"Model\\stone5.OBJ",
+// 		gf_GetModulePath() + L"Model\\spyder.OBJ",
+// 		gf_GetModulePath() + L"Model\\hand.OBJ",
+// 		gf_GetModulePath() + L"Model\\chessPhon.OBJ",
+// 		gf_GetModulePath() + L"Model\\body.OBJ",
+// 
+// 	};
+
+
+	const int nCnt = 61;
 	//const int nCnt = 4;
 	const int nPixel[nCnt] = {
 		10,
 		50,
+		50,
+		50,
+		50,
+		50,
+		50,
+		50,
+		50,
+		50,
+		50,
+
 		100,
+		100,
+		100,
+		100,
+		100,
+		100,
+		100,
+		100,
+		100,
+		100,
+
 		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+
 		200,
+		200,
+		200,
+		200,
+		200,
+		200,
+		200,
+		200,
+		200,
+		200,
+
 		250,
-		300
+		250,
+		250,
+		250,
+		250,
+		250,
+		250,
+		250,
+		250,
+		250,
+
+		300,
+		300,
+		300,
+		300,
+		300,
+		300,
+		300,
+		300,
+		300,
+		300,
 	};
 
 	if(nCnt <= (int)m_nSimulIdx)
@@ -5317,11 +5464,13 @@ LRESULT CModelingWeatheringOfRockDlg::OnSimulationMsg(WPARAM wParam, LPARAM lPar
 		m_nSimulObjectIdx++;
 		if(m_nSimulObjectIdx >= nCntObject)
 		{
-		m_bSimulIdx = false;
+			m_bSimulIdx = false;
 			m_nSimulObjectIdx = 0;
 
-		return TRUE;
-	}
+			
+			AfxMessageBox(L"전체 시뮬레이션 끝!");
+			return TRUE;
+		}
 
 		
 		
