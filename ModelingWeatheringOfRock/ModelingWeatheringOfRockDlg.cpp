@@ -178,6 +178,10 @@ CModelingWeatheringOfRockDlg::CModelingWeatheringOfRockDlg(CWnd* pParent /*=NULL
 	for (int i = 0; i < dfSTONE_TYPE_CNT; i++)
 		m_pPDGranularDisintegration[i] = NULL;
 
+
+	m_nBreakSimulIdx = -1;
+	m_nBreakSimulObjectIdx = 0;
+	m_strNumPathSimul = L"";
 }
 
 void CModelingWeatheringOfRockDlg::DoDataExchange(CDataExchange* pDX)
@@ -349,6 +353,7 @@ BEGIN_MESSAGE_MAP(CModelingWeatheringOfRockDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON6, &CModelingWeatheringOfRockDlg::OnBnClickedButton6)
 	ON_BN_CLICKED(IDC_BUTTON7, &CModelingWeatheringOfRockDlg::OnBnClickedButton7)
 	ON_BN_CLICKED(IDC_BUTTON8, &CModelingWeatheringOfRockDlg::OnBnClickedButton8)
+	ON_BN_CLICKED(IDC_BUTTON9, &CModelingWeatheringOfRockDlg::OnBnClickedButton9)
 END_MESSAGE_MAP()
 
 
@@ -1994,16 +1999,18 @@ LRESULT CModelingWeatheringOfRockDlg::OnCalcRockAgingMsg(WPARAM wParam, LPARAM l
 		strTmp.Format(L"%d",m_nCalcTryCnt);		
 		m_editCalcTryCnt.SetWindowText(strTmp);
 
+		OnBnClickedButton9();
 
 		//! 여기가 CPU처리
-		if((int)wParam == 1)
-		{
-			//OnBnClickedButtonCalcExternalSide();
-		}
-		else
-		{
-			OnBnClickedButtonCalcRockAging();
-		}
+// 		if((int)wParam == 1)
+// 		{
+// 			//OnBnClickedButtonCalcExternalSide();
+// 			//OnBnClickedButton9();
+// 		}
+// 		else
+// 		{
+// 			OnBnClickedButtonCalcRockAging();
+// 		}
 	}
 
 	
@@ -2083,7 +2090,6 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonCalcRockAging()
 		}
 		else
 		{
-
 			int a= 0;
 		}
 
@@ -4437,8 +4443,8 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 		UpdateMainView(FALSE);
 
 		
-		if(m_nComboLogicProcess == 0)
-		{
+// 		if(m_nComboLogicProcess == 0)
+// 		{
 			//////////////////////////////////////////////////////////////////////////
 			//! 시간 비교를 위함
 			ShowTraceTime(L"GPU-GPU");
@@ -4493,7 +4499,7 @@ LRESULT CModelingWeatheringOfRockDlg::OnFinshSolidVoxelMsg(WPARAM wParam, LPARAM
 
 			ShowTraceTime(L"\n", 2);
 
-		}
+//		}
 
 
 		//std::copy(m_bDataTmp[dfTOTAL_IDX], m_bDataTmp[dfTOTAL_IDX]+g_vecVoxelState.size(), g_vecVoxelTotal.begin());
@@ -5299,7 +5305,7 @@ LRESULT CModelingWeatheringOfRockDlg::OnSimulationMsg(WPARAM wParam, LPARAM lPar
 		return FALSE;
 	//g_strFilePathName;
 
-	const int nCntObject = 61;
+	const int nCntObject = 4;
 	const CString strPath[nCntObject] = {
 		gf_GetModulePath() + L"Model\\stone3.OBJ",
 		gf_GetModulePath() + L"Model\\spyder.OBJ",
@@ -5408,9 +5414,6 @@ LRESULT CModelingWeatheringOfRockDlg::OnSimulationMsg(WPARAM wParam, LPARAM lPar
 			AfxMessageBox(L"전체 시뮬레이션 끝!");
 			return TRUE;
 		}
-
-		
-		
 	}
 
 
@@ -6174,15 +6177,21 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5()
 {
 		//g_strFilePathName =L"";
 
-	CFileDialog FileDlg(TRUE, _T("dat"), NULL, OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_PATHMUSTEXIST, _T("dat File(*.dat)|*.dat||") );
-	if (FileDlg.DoModal() == IDOK )
+	if(m_strNumPathSimul == L"")
 	{
-		//g_strFilePathName = FileDlg.GetPathName();
+		CFileDialog FileDlg(TRUE, _T("dat"), NULL, OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_PATHMUSTEXIST, _T("dat File(*.dat)|*.dat||") );
+		if (FileDlg.DoModal() == IDOK )
+		{
+			//g_strFilePathName = FileDlg.GetPathName();
+			m_strNumPathSimul = FileDlg.GetPathName();;
+		}
+		else
+		{
+			return;
+		}
 	}
-	else
-	{
-		return;
-	}
+
+
 
 // 	if(g_strFilePathName.IsEmpty())
 // 		return;
@@ -6201,9 +6210,30 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5()
  	CString strKey= L"";
 // 	CString strPath = gf_GetModulePath() + L"Origin\\";
 // 	strFileName.Format(L"Setp%09d.dat",pParent->m_nLoadStep);
-	CString strNumPath = FileDlg.GetPathName();;
+	
+	if(m_strNumPathSimulPrev == m_strNumPathSimul)
+	{
+		CString strTemp;
+		strTemp.Format(L"CPU - Get CalcRockAging(%s)", m_strNumPathSimul);
+		ShowTraceTime(strTemp);
 
-	FILE *p_Numfile = _wfopen(strNumPath, L"rb"); 
+		OnBnClickedButton7();
+
+		return;
+	}
+	else
+	{
+		CString strTemp;
+		strTemp.Format(L"CPU - CalcRockAging(%s)", m_strNumPathSimul);
+		ShowTraceTime(strTemp);
+	}
+
+	
+
+
+	m_strNumPathSimulPrev = m_strNumPathSimul;
+
+	FILE *p_Numfile = _wfopen(m_strNumPathSimul, L"rb"); 
 
 	CString strProcessStatus;
 
@@ -6225,8 +6255,8 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5()
 			strKey.Format(L"%d-%d-%d",stParticlePos.x,stParticlePos.y,stParticlePos.z);
 			g_MapOutsideData.insert(make_pair(strKey,stParticlePos));
 
-			strProcessStatus.Format(L"Loading Progress : %.2f %%",float((float)n / (float)nTotalCnt) * 100.0);
-			m_editProcessStatus.SetWindowTextW(strProcessStatus);
+// 			strProcessStatus.Format(L"Loading Progress : %.2f %%",float((float)n / (float)nTotalCnt) * 100.0);
+// 			m_editProcessStatus.SetWindowTextW(strProcessStatus);
 
 			map<int,int>::iterator	iterStoneCnt = m_mapStoneTypeCnt.find(stParticlePos.sStoneType);
 			if(iterStoneCnt != m_mapStoneTypeCnt.end())
@@ -6308,7 +6338,7 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButtonObjFileModeling5()
 	//  [10/29/2019 kjky12] 임시...
 	OnBnClickedButton6();
 
-	SendMessage(WM_FINISH_SOLID_VOXEL_MSG,5,0);	
+	//SendMessage(WM_FINISH_SOLID_VOXEL_MSG,5,0);	
 
 
 
@@ -6423,20 +6453,84 @@ void CModelingWeatheringOfRockDlg::RefreshMessage()
 
 void CModelingWeatheringOfRockDlg::OnBnClickedButton8()
 {
-	const int nCnt = 7;
+	m_comboProcessCalcRocking.SetCurSel(0);
+
+	const int nCnt = 61;
 	int nSimul[nCnt] = {
 		1,
+		
 		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+
 		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+
 		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+
 		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+
 		150,
-		180
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
 	};
 
 	CString strTemp = L"";
 	for (int i = 0 ; i < nCnt; i++)
 	{
+		//////////////////////////////////////////////////////////////////////////
+		//! GPU
 		//! 초기화
 		OnBnClickedButton7();
 
@@ -6457,6 +6551,176 @@ void CModelingWeatheringOfRockDlg::OnBnClickedButton8()
 		m_editProcessStatus.SetWindowTextW(strTemp);
 
 		RefreshMessage();
+
 	}
+
+}
+
+
+void CModelingWeatheringOfRockDlg::OnBnClickedButton9()
+{
+	m_comboProcessCalcRocking.SetCurSel(1);
+
+	//m_bBreakSimulIdx = false;
+	//m_nBreakSimulIdx = 0;
+	//m_nBreakSimulObjectIdx = 0;
+
+	m_nCalcTryCnt = 0;
+
+
+	const int nCnt = 61;
+	int nSimul[nCnt] = {
+		1,
+
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+		30,
+
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+		60,
+
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+		90,
+
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+		120,
+
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+		150,
+
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+		180,
+
+
+
+	};
+
+	const int nCntObject = 4;
+	const CString strPath[nCntObject] = {
+		gf_GetModulePath() + L"Origin\\M_stone3_P_100_S_0.dat",
+		gf_GetModulePath() + L"Origin\\M_Spider_P_100_S_0.dat",
+		gf_GetModulePath() + L"Origin\\M_Body_P_100_S_0.dat",
+		gf_GetModulePath() + L"Origin\\M_ChessPhon_P_100_S_0.dat",
+
+
+	};
+
+	if(m_nBreakSimulIdx < 0)
+		m_nBreakSimulIdx = 0;
+
+	if(nCnt <= (int)m_nBreakSimulIdx)
+	{
+		m_nBreakSimulIdx  = 0;
+		m_nBreakSimulObjectIdx++;
+		if(m_nBreakSimulObjectIdx >= nCntObject)
+		{
+			m_nBreakSimulObjectIdx = 0;
+
+			AfxMessageBox(L"전체 시뮬레이션 끝!");
+			return;
+		}
+	}
+
+
+
+// 	CString strValue = L"";
+// 	strValue.Format(L"%d", nPixel[m_nSimulIdx]);
+// 	m_editXAxiDivide.SetWindowTextW(strValue);
+	m_strNumPathSimul = strPath[m_nBreakSimulObjectIdx];
+
+
+	OnBnClickedButtonObjFileModeling5();
+
+
+
+	OnBnClickedButton7();
+
+	RefreshMessage();
+
+	CString strTemp;
+	strTemp.Format(L"%d", nSimul[m_nBreakSimulIdx]);
+	m_EditStopSimulCnt.SetWindowTextW(strTemp);
+
+	strTemp.Format(L"%d Start", nSimul[m_nBreakSimulIdx]);
+	m_editProcessStatus.SetWindowTextW(strTemp);
+
+	RefreshMessage();
+
+
+
+	//OnBnClickedButtonCalcRockAging();
+
+
+	strTemp.Format(L"CPU - CalcRockAging Start(%d)", m_nCalcTryCnt);
+	ShowTraceTime(strTemp);
+
+	_beginthread( ThreadCalcRockAging, 0, this);
+
+
+
+// 	strTemp.Format(L"%d Finish", nSimul[m_nBreakSimulIdx]);
+// 	m_editProcessStatus.SetWindowTextW(strTemp);
+
+	RefreshMessage();
+
+	m_nBreakSimulIdx++;
+
+// 	if(m_nSimulIdx == 0)
+// 		m_comboUseCuda.SetCurSel(dfLOGIC_GPU_GPU); //! GPU를 한번 실행하기위해
+// 	else
+// 		m_comboUseCuda.SetCurSel(dfLOGIC_CPU_CPU);
+// 	//		m_comboUseCuda.SetCurSel((m_nSimulIdx - 1) % 3);
+// 
+// 	g_strFilePathName = strPath[m_nSimulObjectIdx];
+// 
+// 	OnBnClickedButtonObjFileModeling();
+
 
 }

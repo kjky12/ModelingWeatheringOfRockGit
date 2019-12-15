@@ -399,6 +399,14 @@ public:
 	afx_msg void OnBnClickedButton8();
 
 	void RefreshMessage();
+
+
+	CString m_strNumPathSimul;
+	CString m_strNumPathSimulPrev;
+	bool m_bBreakSimulIdx;
+	int m_nBreakSimulIdx;
+	int m_nBreakSimulObjectIdx;
+	afx_msg void OnBnClickedButton9();
 };
 
 
